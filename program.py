@@ -297,10 +297,14 @@ class ForensicApp(tk.Tk):
             self.drive_var.set(drives[0])
 
     def browse_output_image(self):
-        """Browse for the output image file."""
+        """Browse for the output image file and enforce .img extension."""
         file_path = filedialog.asksaveasfilename(
-            defaultextension=".img", filetypes=[("Image Files", "*.img")])
+            defaultextension=".img",  # Default file extension
+            filetypes=[("Image Files", "*.img")]  # File type filter
+        )
         if file_path:
+            # Remove any existing extension and append .img
+            file_path = os.path.splitext(file_path)[0] + ".img"
             self.output_image_entry.delete(0, tk.END)
             self.output_image_entry.insert(0, file_path)
 
