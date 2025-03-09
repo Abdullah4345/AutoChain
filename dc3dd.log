@@ -1,0 +1,6 @@
+
+dc3dd 7.3.1 started at 2025-03-09 19:01:30 +0200
+compiled options:
+command line dc3dd if=/dev/disk4 of=/Users/abdullah/MOON/f.dmg hash=sha256 log=dc3dd.log
+device size: 30720000 sectors (probed),   15,728,640,000 bytes
+sector size: 512 bytes (probed)

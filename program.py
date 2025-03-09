@@ -58,26 +58,26 @@ def get_disk_size(disk_device):
 
 
 def create_disk_image(disk_device, output_image, progress_callback, progress_bar, percentage_label, time_label):
-    """Create a forensic disk image using dc3dd."""
+    """Create a forensic disk image using dd."""
     try:
         log_chain_of_custody("Disk Imaging Started",
                              f"Device: {disk_device}, Output: {output_image}")
-        command = ["sudo", "dc3dd", f"if={disk_device}",
-                   f"of={output_image}", "hash=sha256", "log=dc3dd.log"]
+        total_bytes = get_disk_size(disk_device)
+        command = ["sudo", "dd", f"if={disk_device}",
+                   f"of={output_image}", "bs=4M", "status=progress"]
         process = subprocess.Popen(
             command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         start_time = datetime.now()
-        total_bytes = get_disk_size(disk_device)
 
         # Read output and update progress
         while True:
-            output = process.stdout.readline()
+            output = process.stderr.readline()
             if output == '' and process.poll() is not None:
                 break
             if output:
-                # Extract progress information from dc3dd output
-                match = re.search(r"(\d+) bytes copied", output)
+                # Extract progress information from dd output
+                match = re.search(r"(\d+) bytes", output)
                 if match:
                     copied_bytes = int(match.group(1))
                     if total_bytes > 0:
