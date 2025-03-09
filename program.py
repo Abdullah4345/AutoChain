@@ -40,60 +40,58 @@ def read_chain_of_custody():
 # Disk Imaging Functions
 
 
-def get_disk_size(disk_device):
-    """Get the total size of the disk in bytes."""
-    try:
-        if os.name == "posix":  # macOS or Linux
-            output = subprocess.check_output(
-                ["diskutil", "info", disk_device]).decode("utf-8")
-            for line in output.split("\n"):
-                if "Total Size" in line:
-                    size_str = line.split("(")[1].split(" ")[0]
-                    # Convert from 512-byte blocks to bytes
-                    return int(size_str) * 512
-        return 0
-    except Exception as e:
-        print(f"Error getting disk size: {e}")
-        return 0
-
-
-def create_disk_image(disk_device, output_image, progress_callback, progress_bar, percentage_label, time_label):
+def create_disk_image(disk_device, output_image, disk_size_gb, progress_callback, progress_bar, mb_label, speed_label, time_label):
     """Create a forensic disk image using dd."""
     try:
         log_chain_of_custody("Disk Imaging Started",
                              f"Device: {disk_device}, Output: {output_image}")
-        total_bytes = get_disk_size(disk_device)
         command = ["sudo", "dd", f"if={disk_device}",
                    f"of={output_image}", "bs=4M", "status=progress"]
         process = subprocess.Popen(
             command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         start_time = datetime.now()
+        total_size_bytes = disk_size_gb * 1024 * 1024 * 1024  # Convert GB to bytes
+        total_size_mb = disk_size_gb * 1024  # Convert GB to MB
 
-        # Read output and update progress
         while True:
             output = process.stderr.readline()
             if output == '' and process.poll() is not None:
                 break
-            if output:
-                # Extract progress information from dd output
-                match = re.search(r"(\d+) bytes", output)
-                if match:
-                    copied_bytes = int(match.group(1))
-                    if total_bytes > 0:
-                        progress = (copied_bytes / total_bytes) * 100
-                        progress_bar["value"] = progress
-                        percentage_label.config(text=f"{progress:.2f}%")
 
-                        # Calculate estimated time remaining
-                        elapsed_time = datetime.now() - start_time
-                        if progress > 0:
-                            total_time = elapsed_time * (100 / progress)
-                            remaining_time = total_time - elapsed_time
-                            time_label.config(
-                                text=f"Estimated Time Remaining: {str(remaining_time).split('.')[0]}")
+            # Parse dd output for bytes copied
+            match = re.search(r"(\d+) bytes", output)
+            if match:
+                copied_bytes = int(match.group(1))
+                copied_mb = copied_bytes / (1024 * 1024)  # Convert bytes to MB
 
-                progress_callback(output.strip())
+                # Update progress bar
+                progress = (copied_bytes / total_size_bytes) * 100
+                progress_bar["value"] = progress
+
+                # Calculate transfer speed (MB/sec)
+                elapsed_time = datetime.now() - start_time
+                if elapsed_time.total_seconds() > 0:
+                    mb_per_sec = copied_mb / elapsed_time.total_seconds()
+                else:
+                    mb_per_sec = 0
+
+                # Update labels
+                mb_label.config(
+                    text=f"MB Copied: {copied_mb:.2f} / {total_size_mb:.2f}")
+                speed_label.config(text=f"Speed: {mb_per_sec:.2f} MB/sec")
+
+                # Calculate estimated time remaining
+                if copied_bytes > 0 and elapsed_time.total_seconds() > 0:
+                    remaining_time = (elapsed_time.total_seconds(
+                    ) / copied_bytes) * (total_size_bytes - copied_bytes)
+                    time_label.config(
+                        text=f"Estimated Time Remaining: {str(timedelta(seconds=int(remaining_time)))}")
+                else:
+                    time_label.config(
+                        text="Estimated Time Remaining: Calculating...")
+
+            progress_callback(f"Progress: {progress:.2f}%")
 
         log_chain_of_custody("Disk Imaging Completed",
                              f"Output: {output_image}")
@@ -233,27 +231,30 @@ class ForensicApp(tk.Tk):
         ttk.Button(frame, text="Browse", command=self.browse_output_image).grid(
             row=1, column=2, padx=5, pady=5)
 
+        ttk.Label(frame, text="Disk Size (GB):").grid(
+            row=2, column=0, padx=5, pady=5)
+        self.disk_size_entry = ttk.Entry(frame, width=10)
+        self.disk_size_entry.grid(row=2, column=1, padx=5, pady=5)
+
         self.progress_label = ttk.Label(frame, text="")
-        self.progress_label.grid(row=2, column=0, columnspan=3, pady=10)
+        self.progress_label.grid(row=3, column=0, columnspan=3, pady=10)
 
         self.progress_bar = ttk.Progressbar(
             frame, orient="horizontal", length=400, mode="determinate")
-        self.progress_bar.grid(row=3, column=0, columnspan=3, pady=10)
+        self.progress_bar.grid(row=4, column=0, columnspan=3, pady=10)
 
-        # Style the progress bar to be green
-        style = ttk.Style()
-        style.configure("green.Horizontal.TProgressbar", background="green")
-        self.progress_bar.config(style="green.Horizontal.TProgressbar")
+        self.mb_label = ttk.Label(frame, text="MB Copied: 0.00 / 0.00")
+        self.mb_label.grid(row=5, column=0, columnspan=3, pady=5)
 
-        self.percentage_label = ttk.Label(frame, text="0%")
-        self.percentage_label.grid(row=4, column=0, columnspan=3, pady=5)
+        self.speed_label = ttk.Label(frame, text="Speed: 0.00 MB/sec")
+        self.speed_label.grid(row=6, column=0, columnspan=3, pady=5)
 
         self.time_label = ttk.Label(
             frame, text="Estimated Time Remaining: --:--:--")
-        self.time_label.grid(row=5, column=0, columnspan=3, pady=5)
+        self.time_label.grid(row=7, column=0, columnspan=3, pady=5)
 
         ttk.Button(frame, text="Create Disk Image", command=self.start_disk_imaging).grid(
-            row=6, column=0, columnspan=3, pady=10)
+            row=8, column=0, columnspan=3, pady=10)
 
     def setup_chain_of_custody_tab(self):
         """Setup the Chain of Custody tab."""
@@ -307,22 +308,31 @@ class ForensicApp(tk.Tk):
         """Start the disk imaging process in a background thread."""
         disk_device = self.drive_var.get()
         output_image = self.output_image_entry.get()
+        disk_size_gb = self.disk_size_entry.get()
 
-        if not disk_device or not output_image:
+        if not disk_device or not output_image or not disk_size_gb:
             messagebox.showerror(
-                "Error", "Please select a flash drive and provide an output image path.")
+                "Error", "Please select a flash drive, provide an output image path, and enter the disk size.")
             return
 
-        self.progress_label.config(text="Starting disk imaging...")
+        try:
+            disk_size_gb = float(disk_size_gb)
+        except ValueError:
+            messagebox.showerror("Error", "Disk size must be a valid number.")
+            return
+
+        # Reset progress bar and labels
         self.progress_bar["value"] = 0
-        self.percentage_label.config(text="0%")
+        self.progress_label.config(text="Starting disk imaging...")
+        self.mb_label.config(text="MB Copied: 0.00 / 0.00")
+        self.speed_label.config(text="Speed: 0.00 MB/sec")
         self.time_label.config(text="Estimated Time Remaining: --:--:--")
 
         # Start the disk imaging process in a background thread
         imaging_thread = threading.Thread(
             target=create_disk_image,
-            args=(disk_device, output_image, self.update_progress,
-                  self.progress_bar, self.percentage_label, self.time_label),
+            args=(disk_device, output_image, disk_size_gb, self.update_progress,
+                  self.progress_bar, self.mb_label, self.speed_label, self.time_label),
             daemon=True
         )
         imaging_thread.start()
