@@ -286,8 +286,6 @@ class ChainOfCustodyTab(ttk.Frame):
         pdf.cell(50, 10, "Date & Time", border=1, align="C", fill=True)
         pdf.cell(60, 10, "Image File", border=1, align="C", fill=True)
         pdf.cell(30, 10, "Image Size", border=1, align="C", fill=True)
-        pdf.cell(60, 10, "MD5 Hash", border=1, align="C", fill=True)
-        pdf.cell(60, 10, "SHA-256 Hash", border=1, align="C", fill=True)
         pdf.ln()
 
         pdf.set_font("Arial", size=10)
@@ -301,10 +299,42 @@ class ChainOfCustodyTab(ttk.Frame):
                      1], border=1, align="C", fill=True)
             pdf.cell(30, 10, columns[8].split(": ")[
                      1], border=1, align="C", fill=True)
-            pdf.cell(60, 10, columns[9].split(": ")[
-                     1], border=1, align="C", fill=True)
-            pdf.cell(60, 10, columns[10].split(": ")[
-                     1], border=1, align="C", fill=True)
+            pdf.ln()
+
+        pdf.ln(10)
+
+        # Hash Information Section
+        pdf.set_font("Arial", style="B", size=14)
+        pdf.cell(200, 10, "Hash Information", ln=True, align="L")
+        pdf.ln(5)
+
+        # Display MD5 and SHA-256 hashes on top of each other
+        pdf.set_font("Arial", style="B", size=12)
+        pdf.set_fill_color(0, 128, 0)  # Green color for headers
+        pdf.set_text_color(255, 255, 255)  # White text for headers
+        pdf.cell(50, 10, "Hash Type", border=1, align="C", fill=True)
+        pdf.cell(140, 10, "Hash Value", border=1, align="C", fill=True)
+        pdf.ln()
+
+        pdf.set_font("Arial", size=10)
+        pdf.set_text_color(0, 0, 0)  # Black text for data
+        for i, line in enumerate(log_entries):
+            columns = line.strip().split(" | ")
+            md5_hash = columns[9].split(": ")[1]
+            sha256_hash = columns[10].split(": ")[1]
+
+            # MD5 Hash Row
+            pdf.set_fill_color(
+                240, 240, 240) if i % 2 == 0 else (255, 255, 255)
+            pdf.cell(50, 10, "MD5", border=1, align="C", fill=True)
+            pdf.cell(140, 10, md5_hash, border=1, align="L", fill=True)
+            pdf.ln()
+
+            # SHA-256 Hash Row
+            pdf.set_fill_color(
+                240, 240, 240) if i % 2 == 0 else (255, 255, 255)
+            pdf.cell(50, 10, "SHA-256", border=1, align="C", fill=True)
+            pdf.cell(140, 10, sha256_hash, border=1, align="L", fill=True)
             pdf.ln()
 
         pdf.ln(10)
