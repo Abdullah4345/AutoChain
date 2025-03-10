@@ -1,7 +1,9 @@
+from tkinter import filedialog
 import os
 import subprocess
 import hashlib
 from datetime import datetime, timedelta
+import getpass
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 from reportlab.lib.pagesizes import letter
@@ -10,22 +12,347 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 import threading
 import re
+from fpdf import FPDF
+import csv
+import hashlib
 
-# Configuration
 OUTPUT_DIR = "forensic_evidence"
 EVIDENCE_LOG = os.path.join(OUTPUT_DIR, "chain_of_custody.log")
 HASH_ALGORITHM = "sha256"
 
-# Ensure output directory exists
+
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# Chain of Custody Log Functions
+
+# Constants
+OUTPUT_DIR = "forensic_evidence"
+EVIDENCE_LOG = os.path.join(OUTPUT_DIR, "chain_of_custody.log")
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+# Sample data for dropdowns
+COUNTRIES = ["United States", "Canada", "United Kingdom", "Australia"]
+STATES = {
+    "United States": ["California", "Texas", "New York", "Florida"],
+    "Canada": ["Ontario", "Quebec", "British Columbia", "Alberta"],
+    "United Kingdom": ["England", "Scotland", "Wales", "Northern Ireland"],
+    "Australia": ["New South Wales", "Victoria", "Queensland", "Western Australia"],
+}
+ZIP_CODES = {
+    "California": ["90001", "90210", "94016"],
+    "Texas": ["75001", "77001", "78201"],
+    "New York": ["10001", "10025", "11201"],
+    "Florida": ["32003", "33101", "33401"],
+    # Add more as needed
+}
 
 
-def log_chain_of_custody(action, details):
-    """Log actions to maintain the chain of custody."""
+class ChainOfCustodyTab(ttk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.parent = parent
+        self.setup_ui()
+
+    def setup_ui(self):
+        """Setup the Chain of Custody tab UI."""
+        # Main frame
+        frame = ttk.LabelFrame(self, text="Chain of Custody Form")
+        frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+        # Form fields
+        ttk.Label(frame, text="Case ID:").grid(
+            row=0, column=0, padx=5, pady=5, sticky="e")
+        self.case_id_entry = ttk.Entry(frame, width=40)
+        self.case_id_entry.grid(row=0, column=1, padx=5, pady=5, sticky="w")
+
+        ttk.Label(frame, text="Full Name:").grid(
+            row=1, column=0, padx=5, pady=5, sticky="e")
+        self.name_entry = ttk.Entry(frame, width=40)
+        self.name_entry.grid(row=1, column=1, padx=5, pady=5, sticky="w")
+
+        ttk.Label(frame, text="Country:").grid(
+            row=2, column=0, padx=5, pady=5, sticky="e")
+        self.country_var = tk.StringVar()
+        self.country_dropdown = ttk.Combobox(
+            frame, textvariable=self.country_var, values=COUNTRIES, state="readonly")
+        self.country_dropdown.grid(row=2, column=1, padx=5, pady=5, sticky="w")
+        self.country_dropdown.bind("<<ComboboxSelected>>", self.update_states)
+
+        ttk.Label(frame, text="State:").grid(
+            row=3, column=0, padx=5, pady=5, sticky="e")
+        self.state_var = tk.StringVar()
+        self.state_dropdown = ttk.Combobox(
+            frame, textvariable=self.state_var, state="readonly")
+        self.state_dropdown.grid(row=3, column=1, padx=5, pady=5, sticky="w")
+        self.state_dropdown.bind("<<ComboboxSelected>>", self.update_zip_codes)
+
+        ttk.Label(frame, text="Zip Code (5 digits):").grid(
+            row=4, column=0, padx=5, pady=5, sticky="e")
+        self.zip_entry = ttk.Entry(frame, width=40)
+        self.zip_entry.grid(row=4, column=1, padx=5, pady=5, sticky="w")
+
+        ttk.Label(frame, text="Signature:").grid(
+            row=5, column=0, padx=5, pady=5, sticky="e")
+        self.signature_entry = ttk.Entry(frame, width=40)
+        self.signature_entry.grid(row=5, column=1, padx=5, pady=5, sticky="w")
+
+        ttk.Label(frame, text="Image File:").grid(
+            row=6, column=0, padx=5, pady=5, sticky="e")
+        self.image_file_entry = ttk.Entry(frame, width=30)
+        self.image_file_entry.grid(row=6, column=1, padx=5, pady=5, sticky="w")
+        ttk.Button(frame, text="Browse", command=self.browse_image_file).grid(
+            row=6, column=2, padx=5, pady=5)
+
+        ttk.Label(frame, text="Image Size:").grid(
+            row=7, column=0, padx=5, pady=5, sticky="e")
+        self.image_size_label = ttk.Label(frame, text="0 MB")
+        self.image_size_label.grid(row=7, column=1, padx=5, pady=5, sticky="w")
+
+        ttk.Label(frame, text="MD5 Hash:").grid(
+            row=8, column=0, padx=5, pady=5, sticky="e")
+        self.md5_hash_label = ttk.Label(frame, text="")
+        self.md5_hash_label.grid(row=8, column=1, padx=5, pady=5, sticky="w")
+
+        ttk.Label(frame, text="SHA-256 Hash:").grid(row=9,
+                                                    column=0, padx=5, pady=5, sticky="e")
+        self.sha256_hash_label = ttk.Label(frame, text="")
+        self.sha256_hash_label.grid(
+            row=9, column=1, padx=5, pady=5, sticky="w")
+
+        # Submit button
+        ttk.Button(frame, text="Submit", command=self.submit_form).grid(
+            row=10, column=1, padx=5, pady=10)
+
+        # Export to PDF button
+        ttk.Button(frame, text="Export to PDF", command=self.export_to_pdf).grid(
+            row=11, column=1, padx=5, pady=10)
+
+    def update_states(self, event=None):
+        """Update the state dropdown based on the selected country."""
+        selected_country = self.country_var.get()
+        if selected_country in STATES:
+            self.state_dropdown["values"] = STATES[selected_country]
+            self.state_dropdown.current(0)
+            self.update_zip_codes()
+
+    def update_zip_codes(self, event=None):
+        """Update the zip code dropdown based on the selected state."""
+        selected_state = self.state_var.get()
+        if selected_state in ZIP_CODES:
+            self.zip_dropdown["values"] = ZIP_CODES[selected_state]
+            self.zip_dropdown.current(0)
+
+    def browse_image_file(self):
+        """Browse for an image file, calculate its size, MD5, and SHA-256 hashes."""
+        file_path = filedialog.askopenfilename(
+            filetypes=[("Image Files", "*.img")])
+        if file_path:
+            self.image_file_entry.delete(0, tk.END)
+            self.image_file_entry.insert(0, file_path)
+
+            # Calculate and display image size
+            file_size_mb = os.path.getsize(file_path) / (1024 * 1024)
+            self.image_size_label.config(text=f"{file_size_mb:.2f} MB")
+
+            # Calculate and display MD5 and SHA-256 hashes
+            md5_hash = self.calculate_hash(file_path, algorithm="md5")
+            sha256_hash = self.calculate_hash(file_path, algorithm="sha256")
+            self.md5_hash_label.config(text=md5_hash)
+            self.sha256_hash_label.config(text=sha256_hash)
+
+    def calculate_hash(self, file_path, algorithm="sha256"):
+        """Calculate the hash of a file using the specified algorithm."""
+        hash_func = hashlib.new(algorithm)
+        with open(file_path, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hash_func.update(chunk)
+        return hash_func.hexdigest()
+
+    def submit_form(self):
+        """Submit the form and log the chain of custody."""
+        case_id = self.case_id_entry.get()
+        name = self.name_entry.get()
+        country = self.country_var.get()
+        state = self.state_var.get()
+        zip_code = self.zip_entry.get()
+        signature = self.signature_entry.get()
+        image_file = self.image_file_entry.get()
+        image_size = self.image_size_label.cget("text")
+        md5_hash = self.md5_hash_label.cget("text")
+        sha256_hash = self.sha256_hash_label.cget("text")
+
+        # Validate zip code (must be 5 digits)
+        if not zip_code.isdigit() or len(zip_code) != 5:
+            messagebox.showerror("Error", "Zip Code must be a 5-digit number.")
+            return
+
+        if not all([case_id, name, country, state, zip_code, signature, image_file, md5_hash, sha256_hash]):
+            messagebox.showerror(
+                "Error", "Please fill out all fields and select an image file.")
+            return
+
+        # Log the chain of custody
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        log_entry = (
+            f"{timestamp} | Case ID: {case_id} | Name: {name} | Country: {country} | State: {state} | "
+            f"Zip Code: {zip_code} | Signature: {signature} | Image File: {os.path.basename(image_file)} | "
+            f"Image Size: {image_size} | MD5: {md5_hash} | SHA-256: {sha256_hash}\n"
+        )
+        with open(EVIDENCE_LOG, "a") as log_file:
+            log_file.write(log_entry)
+
+        # Log case ID and hashes to case_log.csv
+        with open("case_log.csv", "a", newline="") as csv_file:
+            writer = csv.writer(csv_file)
+            writer.writerow([case_id, md5_hash, sha256_hash])
+
+        messagebox.showinfo("Success", "Chain of custody logged successfully.")
+
+    def export_to_pdf(self):
+        """Exports the chain of custody log to a professional-looking PDF and clears the log."""
+        # Ask the user for the PDF file path
+        pdf_filename = filedialog.asksaveasfilename(
+            defaultextension=".pdf",
+            filetypes=[("PDF Files", "*.pdf")],
+            title="Save PDF Report"
+        )
+        if not pdf_filename:
+            return  # User cancelled the save dialog
+
+        # Read the log file
+        if not os.path.exists(EVIDENCE_LOG):
+            messagebox.showerror("Error", "No log entries found.")
+            return
+
+        with open(EVIDENCE_LOG, "r") as log_file:
+            log_entries = log_file.readlines()
+
+        # Create the PDF
+        pdf = FPDF()
+        pdf.set_auto_page_break(auto=True, margin=15)
+        pdf.add_page()
+        pdf.set_font("Arial", style="B", size=16)
+        pdf.cell(200, 10, "Chain of Custody Report", ln=True, align="C")
+        pdf.ln(10)
+
+        pdf.set_font("Arial", size=12)
+        pdf.cell(
+            200, 10, f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", ln=True, align="C")
+        pdf.ln(10)
+
+        # Agent Information Section
+        pdf.set_font("Arial", style="B", size=14)
+        pdf.cell(200, 10, "Agent Information", ln=True, align="L")
+        pdf.ln(5)
+
+        # Table for Agent Information
+        pdf.set_font("Arial", style="B", size=12)
+        pdf.set_fill_color(0, 128, 0)  # Green color for headers
+        pdf.set_text_color(255, 255, 255)  # White text for headers
+        pdf.cell(50, 10, "Date & Time", border=1, align="C", fill=True)
+        pdf.cell(40, 10, "Name", border=1, align="C", fill=True)
+        pdf.cell(30, 10, "Country", border=1, align="C", fill=True)
+        pdf.cell(30, 10, "State", border=1, align="C", fill=True)
+        pdf.cell(20, 10, "Zip Code", border=1, align="C", fill=True)
+        pdf.ln()
+
+        pdf.set_font("Arial", size=10)
+        pdf.set_text_color(0, 0, 0)  # Black text for data
+        for i, line in enumerate(log_entries):
+            row_color = (240, 240, 240) if i % 2 == 0 else (255, 255, 255)
+            pdf.set_fill_color(*row_color)
+            columns = line.strip().split(" | ")
+            pdf.cell(50, 10, columns[0], border=1, align="C", fill=True)
+            pdf.cell(40, 10, columns[2].split(": ")[
+                     1], border=1, align="C", fill=True)
+            pdf.cell(30, 10, columns[3].split(": ")[
+                     1], border=1, align="C", fill=True)
+            pdf.cell(30, 10, columns[4].split(": ")[
+                     1], border=1, align="C", fill=True)
+            pdf.cell(20, 10, columns[5].split(": ")[
+                     1], border=1, align="C", fill=True)
+            pdf.ln()
+
+        pdf.ln(10)
+
+        # Image Information Section
+        pdf.set_font("Arial", style="B", size=14)
+        pdf.cell(200, 10, "Image Information", ln=True, align="L")
+        pdf.ln(5)
+
+        # Table for Image Information
+        pdf.set_font("Arial", style="B", size=12)
+        pdf.set_fill_color(0, 128, 0)  # Green color for headers
+        pdf.set_text_color(255, 255, 255)  # White text for headers
+        pdf.cell(50, 10, "Date & Time", border=1, align="C", fill=True)
+        pdf.cell(60, 10, "Image File", border=1, align="C", fill=True)
+        pdf.cell(30, 10, "Image Size", border=1, align="C", fill=True)
+        pdf.cell(60, 10, "MD5 Hash", border=1, align="C", fill=True)
+        pdf.cell(60, 10, "SHA-256 Hash", border=1, align="C", fill=True)
+        pdf.ln()
+
+        pdf.set_font("Arial", size=10)
+        pdf.set_text_color(0, 0, 0)  # Black text for data
+        for i, line in enumerate(log_entries):
+            row_color = (240, 240, 240) if i % 2 == 0 else (255, 255, 255)
+            pdf.set_fill_color(*row_color)
+            columns = line.strip().split(" | ")
+            pdf.cell(50, 10, columns[0], border=1, align="C", fill=True)
+            pdf.cell(60, 10, columns[7].split(": ")[
+                     1], border=1, align="C", fill=True)
+            pdf.cell(30, 10, columns[8].split(": ")[
+                     1], border=1, align="C", fill=True)
+            pdf.cell(60, 10, columns[9].split(": ")[
+                     1], border=1, align="C", fill=True)
+            pdf.cell(60, 10, columns[10].split(": ")[
+                     1], border=1, align="C", fill=True)
+            pdf.ln()
+
+        pdf.ln(10)
+
+        # Signature Section
+        pdf.set_font("Arial", style="B", size=14)
+        pdf.cell(200, 10, "Signature", ln=True, align="L")
+        pdf.ln(5)
+
+        pdf.set_font("Arial", size=12)
+        for line in log_entries:
+            columns = line.strip().split(" | ")
+            signature = columns[6].split(": ")[1]
+            pdf.cell(
+                200, 10, f"Agent Signature: {signature}", ln=True, align="L")
+
+        # Save the PDF
+        pdf.output(pdf_filename)
+        messagebox.showinfo(
+            "Success", f"Chain of custody exported to {pdf_filename}")
+
+        # Clear the log file after exporting
+        with open(EVIDENCE_LOG, "w") as log_file:
+            log_file.write("")
+
+
+def log_chain_of_custody(filename, details=""):
+    """Log the creation of a disk image with optional details, ensuring .img filenames are included."""
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    log_entry = f"[{timestamp}] {action}: {details}\n"
+    user = getpass.getuser()  # Get the current username
+    log_entry = f"{timestamp} | User: {user} | File/Action: {filename}"
+
+    # Ensure .img file names are recorded in the log
+    if filename.endswith(".img"):
+        # Extract just the filename from the full path
+        img_filename = os.path.basename(filename)
+        log_entry += f" | Disk Image: {img_filename}"
+    elif "Output: " in details:
+        # Extract the output image filename from the details
+        output_image = details.split("Output: ")[1].split(",")[0]
+        img_filename = os.path.basename(output_image)
+        log_entry += f" | Disk Image: {img_filename}"
+
+    if details:
+        log_entry += f" | Details: {details}"
+
+    log_entry += "\n"
+
     with open(EVIDENCE_LOG, "a") as log_file:
         log_file.write(log_entry)
 
@@ -37,12 +364,11 @@ def read_chain_of_custody():
     with open(EVIDENCE_LOG, "r") as log_file:
         return log_file.read()
 
-# Disk Imaging Functions
-
 
 def create_disk_image(disk_device, output_image, disk_size_gb, progress_callback, progress_bar, mb_label, speed_label, time_label):
     """Create a forensic disk image using dd."""
     try:
+        # Log the start of the disk imaging process with the output image filename
         log_chain_of_custody("Disk Imaging Started",
                              f"Device: {disk_device}, Output: {output_image}")
         command = ["sudo", "dd", f"if={disk_device}",
@@ -59,29 +385,24 @@ def create_disk_image(disk_device, output_image, disk_size_gb, progress_callback
             if output == '' and process.poll() is not None:
                 break
 
-            # Parse dd output for bytes copied
             match = re.search(r"(\d+) bytes", output)
             if match:
                 copied_bytes = int(match.group(1))
                 copied_mb = copied_bytes / (1024 * 1024)  # Convert bytes to MB
 
-                # Update progress bar
                 progress = (copied_bytes / total_size_bytes) * 100
                 progress_bar["value"] = progress
 
-                # Calculate transfer speed (MB/sec)
                 elapsed_time = datetime.now() - start_time
                 if elapsed_time.total_seconds() > 0:
                     mb_per_sec = copied_mb / elapsed_time.total_seconds()
                 else:
                     mb_per_sec = 0
 
-                # Update labels
                 mb_label.config(
                     text=f"MB Copied: {copied_mb:.2f} / {total_size_mb:.2f}")
                 speed_label.config(text=f"Speed: {mb_per_sec:.2f} MB/sec")
 
-                # Calculate estimated time remaining
                 if copied_bytes > 0 and elapsed_time.total_seconds() > 0:
                     remaining_time = (elapsed_time.total_seconds(
                     ) / copied_bytes) * (total_size_bytes - copied_bytes)
@@ -93,14 +414,13 @@ def create_disk_image(disk_device, output_image, disk_size_gb, progress_callback
 
             progress_callback(f"Progress: {progress:.2f}%")
 
+        # Log the completion of the disk imaging process with the output image filename
         log_chain_of_custody("Disk Imaging Completed",
                              f"Output: {output_image}")
         progress_callback("Disk imaging completed successfully.")
     except Exception as e:
         log_chain_of_custody("Disk Imaging Failed", f"Error: {str(e)}")
         progress_callback(f"Disk imaging failed: {str(e)}")
-
-# Integrity Verification Functions
 
 
 def calculate_hash(file_path, algorithm=HASH_ALGORITHM):
@@ -111,57 +431,87 @@ def calculate_hash(file_path, algorithm=HASH_ALGORITHM):
             hash_func.update(chunk)
     return hash_func.hexdigest()
 
-# PDF Export Functions
-
 
 def export_to_pdf():
-    """Export the chain of custody log to a PDF."""
-    log_content = read_chain_of_custody()
-    if log_content == "No log entries found.":
-        messagebox.showwarning(
-            "No Log Entries", "No chain of custody entries found to export.")
+    """Exports the chain of custody log to a professional-looking PDF and clears the log."""
+    # Ask the user for the PDF file path
+    pdf_filename = filedialog.asksaveasfilename(
+        defaultextension=".pdf",
+        filetypes=[("PDF Files", "*.pdf")],
+        title="Save PDF Report"
+    )
+    if not pdf_filename:
+        return  # User cancelled the save dialog
+
+    # Read the log file
+    if not os.path.exists(EVIDENCE_LOG):
+        messagebox.showerror("Error", "No log entries found.")
         return
 
-    pdf_path = filedialog.asksaveasfilename(
-        defaultextension=".pdf", filetypes=[("PDF Files", "*.pdf")])
-    if not pdf_path:
-        return
+    with open(EVIDENCE_LOG, "r") as log_file:
+        log_entries = log_file.readlines()
 
-    doc = SimpleDocTemplate(pdf_path, pagesize=letter)
-    styles = getSampleStyleSheet()
-    story = []
+    # Create the PDF
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+    pdf.set_font("Arial", style="B", size=16)
+    pdf.cell(200, 10, "Chain of Custody Report", ln=True, align="C")
+    pdf.ln(10)
 
-    # Title
-    title = Paragraph("Chain of Custody Report", styles['Title'])
-    story.append(title)
-    story.append(Spacer(1, 12))
+    pdf.set_font("Arial", size=12)
+    pdf.cell(
+        200, 10, f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", ln=True, align="C")
+    pdf.ln(10)
 
-    # Log Content
-    log_lines = log_content.split("\n")
-    data = [[line] for line in log_lines if line.strip()]
-    table = Table(data, colWidths=[500])
-    table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black),
-    ]))
-    story.append(table)
+    # Add a table for the log entries
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.cell(50, 10, "Date & Time", border=1, align="C")
+    pdf.cell(40, 10, "Name", border=1, align="C")
+    pdf.cell(30, 10, "Country", border=1, align="C")
+    pdf.cell(30, 10, "State", border=1, align="C")
+    pdf.cell(20, 10, "Zip Code", border=1, align="C")
+    pdf.cell(40, 10, "Signature", border=1, align="C")
+    pdf.cell(40, 10, "Image File", border=1, align="C")
+    pdf.cell(30, 10, "Image Size", border=1, align="C")
+    pdf.ln()
 
-    doc.build(story)
-    messagebox.showinfo("Export Successful",
-                        f"Chain of custody exported to {pdf_path}")
+    pdf.set_font("Arial", size=10)
+    for i, line in enumerate(log_entries):
+        row_color = (240, 240, 240) if i % 2 == 0 else (255, 255, 255)
+        pdf.set_fill_color(*row_color)
+        columns = line.strip().split(" | ")
+        pdf.cell(50, 10, columns[0], border=1, align="C", fill=True)
+        pdf.cell(40, 10, columns[1].split(": ")[1],
+                 border=1, align="C", fill=True)
+        pdf.cell(30, 10, columns[2].split(": ")[1],
+                 border=1, align="C", fill=True)
+        pdf.cell(30, 10, columns[3].split(": ")[1],
+                 border=1, align="C", fill=True)
+        pdf.cell(20, 10, columns[4].split(": ")[1],
+                 border=1, align="C", fill=True)
+        pdf.cell(40, 10, columns[5].split(": ")[1],
+                 border=1, align="C", fill=True)
+        pdf.cell(40, 10, columns[6].split(": ")[1],
+                 border=1, align="C", fill=True)
+        pdf.cell(30, 10, columns[7].split(": ")[1],
+                 border=1, align="C", fill=True)
+        pdf.ln()
 
-# Drive Detection Functions
+    # Save the PDF
+    pdf.output(pdf_filename)
+    messagebox.showinfo(
+        "Success", f"Chain of custody exported to {pdf_filename}")
+
+    # Clear the log file after exporting
+    with open(EVIDENCE_LOG, "w") as log_file:
+        log_file.write("")
 
 
 def get_connected_drives():
     """Get a list of connected drives."""
     drives = []
-    if os.name == "posix":  # Linux or macOS
+    if os.name == "posix":
         try:
             output = subprocess.check_output(
                 ["diskutil", "list"]).decode("utf-8")
@@ -171,7 +521,7 @@ def get_connected_drives():
                     drives.append(line.split()[0])
         except Exception as e:
             print(f"Error detecting drives: {e}")
-    elif os.name == "nt":  # Windows
+    elif os.name == "nt":
         import string
         from ctypes import windll
         bitmask = windll.kernel32.GetLogicalDrives()
@@ -179,32 +529,41 @@ def get_connected_drives():
             letter) - ord('A')]
     return drives
 
-# GUI Application
 
+# ...existing code...
 
 class ForensicApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Forensic Evidence Acquisition Tool")
-        self.geometry("800x600")
+        self.geometry("580x500")
+        # self.resizable(False, False)
 
-        # Create Tabs
+        # Configure the style for the notebook tabs
+        self.style = ttk.Style()
+        self.style.configure('TNotebook.Tab', font=(
+            'Comic Sans MS', '12', 'bold'))
+
+        # Create the notebook (tab control)
         self.tab_control = ttk.Notebook(self)
-        self.tab1 = ttk.Frame(self.tab_control)
-        self.tab2 = ttk.Frame(self.tab_control)
-        self.tab3 = ttk.Frame(self.tab_control)
+
+        # Create the tabs
+        # Disk Imaging tab
+        self.tab1 = tk.Frame(self.tab_control, bg="#c71585")
+        self.tab2 = ChainOfCustodyTab(self.tab_control)  # Chain of Custody tab
+        # Integrity Verification tab
+        self.tab3 = tk.Frame(self.tab_control, bg="#b6d0e2")
+
+        # Add the tabs to the notebook
         self.tab_control.add(self.tab1, text="Disk Imaging")
         self.tab_control.add(self.tab2, text="Chain of Custody")
         self.tab_control.add(self.tab3, text="Integrity Verification")
+
+        # Pack the notebook to make it visible
         self.tab_control.pack(expand=1, fill="both")
 
-        # Disk Imaging Tab
+        # Set up the contents of each tab
         self.setup_disk_imaging_tab()
-
-        # Chain of Custody Tab
-        self.setup_chain_of_custody_tab()
-
-        # Integrity Verification Tab
         self.setup_integrity_verification_tab()
 
     def setup_disk_imaging_tab(self):
@@ -212,49 +571,56 @@ class ForensicApp(tk.Tk):
         frame = ttk.LabelFrame(self.tab1, text="Disk Imaging")
         frame.pack(fill="both", expand=True, padx=10, pady=10)
 
-        ttk.Label(frame, text="Select Flash Drive:").grid(
-            row=0, column=0, padx=5, pady=5)
+        label_font = ('Arial', 13)  # Change font and size here
+
+        # Define a custom style for the buttons
+        self.style.configure('Custom.TButton', font=label_font)
+
+        ttk.Label(frame, text="Select Flash Drive:", font=label_font).grid(
+            row=1, column=0, padx=5, pady=5)
         self.drive_var = tk.StringVar()
         self.drive_dropdown = ttk.Combobox(
-            frame, textvariable=self.drive_var, state="readonly")
-        self.drive_dropdown.grid(row=0, column=1, padx=5, pady=5)
+            frame, textvariable=self.drive_var, state="readonly", font=label_font)
+        self.drive_dropdown.grid(row=1, column=1, padx=5, pady=5)
         self.refresh_drives()
 
-        ttk.Button(frame, text="Refresh Drives", command=self.refresh_drives).grid(
-            row=0, column=2, padx=5, pady=5)
-
-        ttk.Label(frame, text="Output Image:").grid(
-            row=1, column=0, padx=5, pady=5)
-        self.output_image_entry = ttk.Entry(frame, width=50)
-        self.output_image_entry.grid(row=1, column=1, padx=5, pady=5)
-
-        ttk.Button(frame, text="Browse", command=self.browse_output_image).grid(
+        ttk.Button(frame, text="Refresh Drives", command=self.refresh_drives, style='Custom.TButton').grid(
             row=1, column=2, padx=5, pady=5)
 
-        ttk.Label(frame, text="Disk Size (GB):").grid(
+        ttk.Label(frame, text="Output Image:", font=label_font).grid(
             row=2, column=0, padx=5, pady=5)
-        self.disk_size_entry = ttk.Entry(frame, width=10)
-        self.disk_size_entry.grid(row=2, column=1, padx=5, pady=5)
+        self.output_image_entry = ttk.Entry(frame, width=20, font=label_font)
+        self.output_image_entry.grid(row=2, column=1, padx=5, pady=5)
 
-        self.progress_label = ttk.Label(frame, text="")
-        self.progress_label.grid(row=3, column=0, columnspan=3, pady=10)
+        ttk.Button(frame, text="      Browse       ", command=self.browse_output_image, style='Custom.TButton').grid(
+            row=2, column=2, padx=5, pady=5)
+
+        ttk.Label(frame, text="Disk Size (GB):", font=label_font).grid(
+            row=3, column=0, padx=5, pady=5)
+        self.disk_size_entry = ttk.Entry(frame, width=20, font=label_font)
+        self.disk_size_entry.grid(row=3, column=1, padx=5, pady=5)
+
+        self.progress_label = ttk.Label(frame, text="", font=label_font)
+        self.progress_label.grid(row=4, column=0, columnspan=3, pady=10)
 
         self.progress_bar = ttk.Progressbar(
             frame, orient="horizontal", length=400, mode="determinate")
-        self.progress_bar.grid(row=4, column=0, columnspan=3, pady=10)
+        self.progress_bar.grid(row=5, column=0, columnspan=3, pady=10)
 
-        self.mb_label = ttk.Label(frame, text="MB Copied: 0.00 / 0.00")
-        self.mb_label.grid(row=5, column=0, columnspan=3, pady=5)
+        self.mb_label = ttk.Label(
+            frame, text="MB Copied: 0.00 / 0.00", font=label_font)
+        self.mb_label.grid(row=6, column=0, columnspan=3, pady=5)
 
-        self.speed_label = ttk.Label(frame, text="Speed: 0.00 MB/sec")
-        self.speed_label.grid(row=6, column=0, columnspan=3, pady=5)
+        self.speed_label = ttk.Label(
+            frame, text="Speed: 0.00 MB/sec", font=label_font)
+        self.speed_label.grid(row=7, column=0, columnspan=3, pady=5)
 
         self.time_label = ttk.Label(
-            frame, text="Estimated Time Remaining: --:--:--")
-        self.time_label.grid(row=7, column=0, columnspan=3, pady=5)
+            frame, text="Estimated Time Remaining: --:--:--", font=label_font)
+        self.time_label.grid(row=8, column=0, columnspan=3, pady=5)
 
-        ttk.Button(frame, text="Create Disk Image", command=self.start_disk_imaging).grid(
-            row=8, column=0, columnspan=3, pady=10)
+        ttk.Button(frame, text="Create Disk Image", command=self.start_disk_imaging, style='Custom.TButton').grid(
+            row=9, column=0, columnspan=3, pady=10)
 
     def setup_chain_of_custody_tab(self):
         """Setup the Chain of Custody tab."""
@@ -299,11 +665,11 @@ class ForensicApp(tk.Tk):
     def browse_output_image(self):
         """Browse for the output image file and enforce .img extension."""
         file_path = filedialog.asksaveasfilename(
-            defaultextension=".img",  # Default file extension
-            filetypes=[("Image Files", "*.img")]  # File type filter
+            defaultextension=".img",
+            filetypes=[("Image Files", "*.img")]
         )
         if file_path:
-            # Remove any existing extension and append .img
+
             file_path = os.path.splitext(file_path)[0] + ".img"
             self.output_image_entry.delete(0, tk.END)
             self.output_image_entry.insert(0, file_path)
@@ -325,14 +691,12 @@ class ForensicApp(tk.Tk):
             messagebox.showerror("Error", "Disk size must be a valid number.")
             return
 
-        # Reset progress bar and labels
         self.progress_bar["value"] = 0
         self.progress_label.config(text="Starting disk imaging...")
         self.mb_label.config(text="MB Copied: 0.00 / 0.00")
         self.speed_label.config(text="Speed: 0.00 MB/sec")
         self.time_label.config(text="Estimated Time Remaining: --:--:--")
 
-        # Start the disk imaging process in a background thread
         imaging_thread = threading.Thread(
             target=create_disk_image,
             args=(disk_device, output_image, disk_size_gb, self.update_progress,
@@ -377,7 +741,7 @@ class ForensicApp(tk.Tk):
                 "Error", f"Integrity verification failed: {str(e)}")
 
 
-# Run the Application
+# Run
 if __name__ == "__main__":
     app = ForensicApp()
     app.mainloop()
