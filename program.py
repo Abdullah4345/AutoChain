@@ -118,13 +118,21 @@ class ChainOfCustodyTab(ttk.Frame):
         self.sha256_hash_label.grid(
             row=9, column=1, padx=5, pady=5, sticky="w")
 
+        # Additional Feedback Input Field
+        ttk.Label(frame, text="Additional Feedback:").grid(
+            row=10, column=0, padx=5, pady=5, sticky="ne")
+        self.additional_feedback = tk.Text(
+            frame, width=60, height=10, wrap=tk.WORD)
+        self.additional_feedback.grid(
+            row=10, column=1, columnspan=2, padx=5, pady=5, sticky="w")
+
         # Submit button
         ttk.Button(frame, text="Submit", command=self.submit_form).grid(
-            row=10, column=1, padx=5, pady=10)
+            row=11, column=1, padx=5, pady=10)
 
         # Export to PDF button
         ttk.Button(frame, text="Export to PDF", command=self.export_to_pdf).grid(
-            row=11, column=1, padx=5, pady=10)
+            row=11, column=2, padx=5, pady=10)
 
     def update_states(self, event=None):
         """Update the state dropdown based on the selected country."""
@@ -138,8 +146,10 @@ class ChainOfCustodyTab(ttk.Frame):
         """Update the zip code dropdown based on the selected state."""
         selected_state = self.state_var.get()
         if selected_state in ZIP_CODES:
-            self.zip_dropdown["values"] = ZIP_CODES[selected_state]
-            self.zip_dropdown.current(0)
+            # If you want to auto-fill the zip code, you can do something like this:
+            self.zip_entry.delete(0, tk.END)
+            # Insert the first zip code for the selected state
+            self.zip_entry.insert(0, ZIP_CODES[selected_state][0])
 
     def browse_image_file(self):
         """Browse for an image file, calculate its size, MD5, and SHA-256 hashes."""
@@ -179,6 +189,8 @@ class ChainOfCustodyTab(ttk.Frame):
         image_size = self.image_size_label.cget("text")
         md5_hash = self.md5_hash_label.cget("text")
         sha256_hash = self.sha256_hash_label.cget("text")
+        additional_feedback = self.additional_feedback.get(
+            "1.0", tk.END).strip()
 
         # Validate zip code (must be 5 digits)
         if not zip_code.isdigit() or len(zip_code) != 5:
@@ -193,9 +205,18 @@ class ChainOfCustodyTab(ttk.Frame):
         # Log the chain of custody
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         log_entry = (
-            f"{timestamp} | Case ID: {case_id} | Name: {name} | Country: {country} | State: {state} | "
-            f"Zip Code: {zip_code} | Signature: {signature} | Image File: {os.path.basename(image_file)} | "
-            f"Image Size: {image_size} | MD5: {md5_hash} | SHA-256: {sha256_hash}\n"
+            f"Date & Time: {timestamp} | "
+            f"Case ID: {case_id} | "
+            f"Name: {name} | "
+            f"Country: {country} | "
+            f"State: {state} | "
+            f"Zip Code: {zip_code} | "
+            f"Signature: {signature} | "
+            f"Image File: {os.path.basename(image_file)} | "
+            f"Image Size: {image_size} | "
+            f"MD5: {md5_hash} | "
+            f"SHA-256: {sha256_hash} | "
+            f"Additional Feedback: {additional_feedback}\n"
         )
         with open(EVIDENCE_LOG, "a") as log_file:
             log_file.write(log_entry)
@@ -223,36 +244,71 @@ class ChainOfCustodyTab(ttk.Frame):
             messagebox.showerror("Error", "No log entries found.")
             return
 
-        with open(EVIDENCE_LOG, "r") as log_file:
-            log_entries = log_file.readlines()
+        try:
+            with open(EVIDENCE_LOG, "r") as log_file:
+                log_entries = log_file.readlines()
+        except Exception as e:
+            messagebox.showerror(
+                "Error", f"Failed to read the log file: {str(e)}")
+            return
+
+        # Clear the log file before exporting
+        try:
+            with open(EVIDENCE_LOG, "w") as log_file:
+                log_file.write("")
+            print("Log file cleared successfully.")  # Debugging statement
+        except Exception as e:
+            messagebox.showerror(
+                "Error", f"Failed to clear the log file: {str(e)}")
+            return
 
         # Create the PDF
         pdf = FPDF()
         pdf.set_auto_page_break(auto=True, margin=15)
         pdf.add_page()
-        pdf.set_font("Arial", style="B", size=16)
-        pdf.cell(200, 10, "Chain of Custody Report", ln=True, align="C")
-        pdf.ln(10)
 
+        # Set margins for the entire PDF
+        pdf.set_left_margin(20)
+        pdf.set_right_margin(20)
+
+        # Title Section (Centered with Green Background)
+        pdf.set_font("Arial", style="B", size=24)
+        pdf.set_fill_color(128, 0, 0)  # Green background
+        pdf.set_text_color(255, 255, 255)  # White text
+        pdf.cell(0, 20, "Chain of Custody Report",
+                 ln=True, align="C", fill=True)
+
+        # Case ID (Centered with Green Background)
+        if log_entries:
+            try:
+                case_id = log_entries[0].split(" | ")[1].split(
+                    ": ")[1]  # Extract Case ID from the first log entry
+            except IndexError:
+                case_id = "N/A"  # Handle missing Case ID
+            pdf.set_font("Arial", style="B", size=16)
+            pdf.cell(0, 10, f"Case ID: {case_id}",
+                     ln=True, align="C", fill=True)
+
+        # Generated On (Centered with Green Background)
         pdf.set_font("Arial", size=12)
         pdf.cell(
-            200, 10, f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", ln=True, align="C")
-        pdf.ln(10)
+            0, 10, f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", ln=True, align="C", fill=True)
+        pdf.ln(5)  # Add some space after the title section
 
         # Agent Information Section
         pdf.set_font("Arial", style="B", size=14)
-        pdf.cell(200, 10, "Agent Information", ln=True, align="L")
+        pdf.set_text_color(0, 0, 0)  # Black text
+        pdf.cell(0, 10, "Agent Information", ln=True, align="L")
         pdf.ln(5)
 
-        # Table for Agent Information
+        # Table for Agent Information (Stretched to PDF width with margins)
         pdf.set_font("Arial", style="B", size=12)
         pdf.set_fill_color(0, 128, 0)  # Green color for headers
         pdf.set_text_color(255, 255, 255)  # White text for headers
-        pdf.cell(50, 10, "Date & Time", border=1, align="C", fill=True)
-        pdf.cell(40, 10, "Name", border=1, align="C", fill=True)
-        pdf.cell(30, 10, "Country", border=1, align="C", fill=True)
-        pdf.cell(30, 10, "State", border=1, align="C", fill=True)
-        pdf.cell(20, 10, "Zip Code", border=1, align="C", fill=True)
+        col_widths = [40, 40, 30, 30, 30]  # Equal column widths
+        headers = ["Date & Time", "Name", "Country", "State", "Zip Code"]
+        for i, header in enumerate(headers):
+            pdf.cell(col_widths[i], 10, header, border=1, align="C", fill=True)
         pdf.ln()
 
         pdf.set_font("Arial", size=10)
@@ -261,31 +317,46 @@ class ChainOfCustodyTab(ttk.Frame):
             row_color = (240, 240, 240) if i % 2 == 0 else (255, 255, 255)
             pdf.set_fill_color(*row_color)
             columns = line.strip().split(" | ")
-            pdf.cell(50, 10, columns[0], border=1, align="C", fill=True)
-            pdf.cell(40, 10, columns[2].split(": ")[
-                     1], border=1, align="C", fill=True)
-            pdf.cell(30, 10, columns[3].split(": ")[
-                     1], border=1, align="C", fill=True)
-            pdf.cell(30, 10, columns[4].split(": ")[
-                     1], border=1, align="C", fill=True)
-            pdf.cell(20, 10, columns[5].split(": ")[
-                     1], border=1, align="C", fill=True)
+            data = {}
+            for column in columns:
+                if ": " in column:
+                    key, value = column.split(": ", 1)
+                    data[key.strip()] = value.strip()
+
+            # Extract values from the log entry
+            date_time = data.get("Date & Time", "N/A")
+            name = data.get("Name", "N/A")
+            country = data.get("Country", "N/A")
+            state = data.get("State", "N/A")
+            zip_code = data.get("Zip Code", "N/A")
+
+            # Add values to the table
+            pdf.cell(col_widths[0], 10, date_time,
+                     border=1, align="C", fill=True)
+            pdf.cell(col_widths[1], 10, name, border=1, align="C", fill=True)
+            pdf.cell(col_widths[2], 10, country,
+                     border=1, align="C", fill=True)
+            pdf.cell(col_widths[3], 10, state, border=1, align="C", fill=True)
+            pdf.cell(col_widths[4], 10, zip_code,
+                     border=1, align="C", fill=True)
             pdf.ln()
 
         pdf.ln(10)
 
         # Image Information Section
         pdf.set_font("Arial", style="B", size=14)
-        pdf.cell(200, 10, "Image Information", ln=True, align="L")
+        pdf.set_text_color(0, 0, 0)  # Black text
+        pdf.cell(0, 10, "Image Information", ln=True, align="L")
         pdf.ln(5)
 
-        # Table for Image Information
+        # Table for Image Information (Stretched to PDF width with margins)
         pdf.set_font("Arial", style="B", size=12)
         pdf.set_fill_color(0, 128, 0)  # Green color for headers
         pdf.set_text_color(255, 255, 255)  # White text for headers
-        pdf.cell(50, 10, "Date & Time", border=1, align="C", fill=True)
-        pdf.cell(60, 10, "Image File", border=1, align="C", fill=True)
-        pdf.cell(30, 10, "Image Size", border=1, align="C", fill=True)
+        col_widths = [50, 70, 50]  # Adjusted column widths
+        headers = ["Date & Time", "Image File", "Image Size"]
+        for i, header in enumerate(headers):
+            pdf.cell(col_widths[i], 10, header, border=1, align="C", fill=True)
         pdf.ln()
 
         pdf.set_font("Arial", size=10)
@@ -294,71 +365,119 @@ class ChainOfCustodyTab(ttk.Frame):
             row_color = (240, 240, 240) if i % 2 == 0 else (255, 255, 255)
             pdf.set_fill_color(*row_color)
             columns = line.strip().split(" | ")
-            pdf.cell(50, 10, columns[0], border=1, align="C", fill=True)
-            pdf.cell(60, 10, columns[7].split(": ")[
-                     1], border=1, align="C", fill=True)
-            pdf.cell(30, 10, columns[8].split(": ")[
-                     1], border=1, align="C", fill=True)
+            data = {}
+            for column in columns:
+                if ": " in column:
+                    key, value = column.split(": ", 1)
+                    data[key.strip()] = value.strip()
+
+            # Extract values from the log entry
+            date_time = data.get("Date & Time", "N/A")
+            image_file = data.get("Image File", "N/A")
+            image_size = data.get("Image Size", "N/A")
+
+            # Add values to the table
+            pdf.cell(col_widths[0], 10, date_time,
+                     border=1, align="C", fill=True)
+            pdf.cell(col_widths[1], 10, image_file,
+                     border=1, align="C", fill=True)
+            pdf.cell(col_widths[2], 10, image_size,
+                     border=1, align="C", fill=True)
             pdf.ln()
 
         pdf.ln(10)
 
         # Hash Information Section
         pdf.set_font("Arial", style="B", size=14)
-        pdf.cell(200, 10, "Hash Information", ln=True, align="L")
+        pdf.set_text_color(0, 0, 0)  # Black text
+        pdf.cell(0, 10, "Hash Information", ln=True, align="L")
         pdf.ln(5)
 
         # Display MD5 and SHA-256 hashes on top of each other
         pdf.set_font("Arial", style="B", size=12)
         pdf.set_fill_color(0, 128, 0)  # Green color for headers
         pdf.set_text_color(255, 255, 255)  # White text for headers
-        pdf.cell(50, 10, "Hash Type", border=1, align="C", fill=True)
-        pdf.cell(140, 10, "Hash Value", border=1, align="C", fill=True)
+        pdf.cell(35, 10, "Hash Type", border=1, align="C", fill=True)
+        pdf.cell(135, 10, "Hash Value", border=1, align="C", fill=True)
         pdf.ln()
 
         pdf.set_font("Arial", size=10)
         pdf.set_text_color(0, 0, 0)  # Black text for data
         for i, line in enumerate(log_entries):
             columns = line.strip().split(" | ")
-            md5_hash = columns[9].split(": ")[1]
-            sha256_hash = columns[10].split(": ")[1]
+            data = {}
+            for column in columns:
+                if ": " in column:
+                    key, value = column.split(": ", 1)
+                    data[key.strip()] = value.strip()
+
+            # Extract values from the log entry
+            md5_hash = data.get("MD5", "N/A")
+            sha256_hash = data.get("SHA-256", "N/A")
 
             # MD5 Hash Row
             pdf.set_fill_color(
                 240, 240, 240) if i % 2 == 0 else (255, 255, 255)
-            pdf.cell(50, 10, "MD5", border=1, align="C", fill=True)
-            pdf.cell(140, 10, md5_hash, border=1, align="L", fill=True)
+            pdf.cell(35, 10, "MD5", border=1, align="C", fill=True)
+            pdf.cell(135, 10, md5_hash, border=1, align="L", fill=True)
             pdf.ln()
 
             # SHA-256 Hash Row
             pdf.set_fill_color(
                 240, 240, 240) if i % 2 == 0 else (255, 255, 255)
-            pdf.cell(50, 10, "SHA-256", border=1, align="C", fill=True)
-            pdf.cell(140, 10, sha256_hash, border=1, align="L", fill=True)
+            pdf.cell(35, 10, "SHA-256", border=1, align="C", fill=True)
+            pdf.cell(135, 10, sha256_hash, border=1, align="L", fill=True)
             pdf.ln()
 
         pdf.ln(10)
-
-        # Signature Section
+        # Additional Info Section (Black Background for Header, White Text)
         pdf.set_font("Arial", style="B", size=14)
-        pdf.cell(200, 10, "Signature", ln=True, align="L")
+        pdf.set_fill_color(0, 0, 0)  # Black background for the header
+        pdf.set_text_color(255, 255, 255)  # White text for the header
+        pdf.cell(0, 10, "Additional Info", ln=True, align="L", fill=True)
+        pdf.ln(5)
+
+        # Feedback Text (Light Gray Background, Black Text)
+        pdf.set_font("Arial", size=12)
+        # Light gray background for the feedback text
+        pdf.set_fill_color(240, 240, 240)
+        pdf.set_text_color(0, 0, 0)  # Black text for the feedback text
+        for line in log_entries:
+            columns = line.strip().split(" | ")
+            data = {}
+            for column in columns:
+                if ": " in column:
+                    key, value = column.split(": ", 1)
+                    data[key.strip()] = value.strip()
+
+            additional_feedback = data.get(
+                "Additional Feedback", "No additional feedback provided.")
+            pdf.multi_cell(0, 10, additional_feedback,
+                           border=1, align="L", fill=True)
+        # Signature Section (Moved to the bottom of the page)
+        pdf.ln(10)
+        pdf.set_font("Arial", style="B", size=14)
+        pdf.set_text_color(0, 0, 0)  # Black text
+        pdf.cell(0, 10, "Signature", ln=True, align="L")
         pdf.ln(5)
 
         pdf.set_font("Arial", size=12)
         for line in log_entries:
             columns = line.strip().split(" | ")
-            signature = columns[6].split(": ")[1]
+            data = {}
+            for column in columns:
+                if ": " in column:
+                    key, value = column.split(": ", 1)
+                    data[key.strip()] = value.strip()
+
+            signature = data.get("Signature", "N/A")
             pdf.cell(
-                200, 10, f"Agent Signature: {signature}", ln=True, align="L")
+                0, 10, f"Mr./Ms. {signature}", ln=True, align="L")
 
         # Save the PDF
         pdf.output(pdf_filename)
         messagebox.showinfo(
             "Success", f"Chain of custody exported to {pdf_filename}")
-
-        # Clear the log file after exporting
-        with open(EVIDENCE_LOG, "w") as log_file:
-            log_file.write("")
 
 
 def log_chain_of_custody(filename, details=""):
@@ -462,7 +581,7 @@ def calculate_hash(file_path, algorithm=HASH_ALGORITHM):
     return hash_func.hexdigest()
 
 
-def export_to_pdf():
+def export_to_pdf(self):
     """Exports the chain of custody log to a professional-looking PDF and clears the log."""
     # Ask the user for the PDF file path
     pdf_filename = filedialog.asksaveasfilename(
@@ -478,55 +597,146 @@ def export_to_pdf():
         messagebox.showerror("Error", "No log entries found.")
         return
 
-    with open(EVIDENCE_LOG, "r") as log_file:
-        log_entries = log_file.readlines()
+    try:
+        with open(EVIDENCE_LOG, "r") as log_file:
+            log_entries = log_file.readlines()
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to read the log file: {str(e)}")
+        return
 
     # Create the PDF
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
-    pdf.set_font("Arial", style="B", size=16)
-    pdf.cell(200, 10, "Chain of Custody Report", ln=True, align="C")
-    pdf.ln(10)
 
-    pdf.set_font("Arial", size=12)
+    # Title Section (Centered)
+    pdf.set_font("Arial", style="B", size=24)  # Big font for the title
+    pdf.set_fill_color(0, 128, 0)  # Green background
+    pdf.set_text_color(255, 255, 255)  # White text
+    pdf.cell(200, 20, "Chain of Custody Report", ln=True, align="C", fill=True)
+
+    # Case ID (Centered, Medium Font)
+    if log_entries:
+        case_id = log_entries[0].split(" | ")[1].split(
+            ": ")[1]  # Extract Case ID from the first log entry
+        pdf.set_font("Arial", style="B", size=16)  # Medium font for Case ID
+        pdf.cell(200, 10, f"Case ID: {case_id}", ln=True, align="C", fill=True)
+
+    # Generated On (Centered, Small Font)
+    pdf.set_font("Arial", size=12)  # Small font for the timestamp
     pdf.cell(
-        200, 10, f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", ln=True, align="C")
-    pdf.ln(10)
+        200, 10, f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", ln=True, align="C", fill=True)
+    pdf.ln(20)  # Add some space after the title section
 
-    # Add a table for the log entries
+    # Agent Information Section
+    pdf.set_font("Arial", style="B", size=14)
+    pdf.set_fill_color(0, 128, 0)  # Green background
+    pdf.set_text_color(255, 255, 255)  # White text
+    pdf.cell(200, 10, "Agent Information", ln=True, align="L", fill=True)
+    pdf.ln(5)
+
+    # Table for Agent Information (Stretched to PDF width)
     pdf.set_font("Arial", style="B", size=12)
-    pdf.cell(50, 10, "Date & Time", border=1, align="C")
-    pdf.cell(40, 10, "Name", border=1, align="C")
-    pdf.cell(30, 10, "Country", border=1, align="C")
-    pdf.cell(30, 10, "State", border=1, align="C")
-    pdf.cell(20, 10, "Zip Code", border=1, align="C")
-    pdf.cell(40, 10, "Signature", border=1, align="C")
-    pdf.cell(40, 10, "Image File", border=1, align="C")
-    pdf.cell(30, 10, "Image Size", border=1, align="C")
+    pdf.set_fill_color(0, 128, 0)  # Green color for headers
+    pdf.set_text_color(255, 255, 255)  # White text for headers
+    col_widths = [40, 40, 40, 40, 40]  # Equal column widths
+    headers = ["Date & Time", "Name", "Country", "State", "Zip Code"]
+    for i, header in enumerate(headers):
+        pdf.cell(col_widths[i], 10, header, border=1, align="C", fill=True)
     pdf.ln()
 
     pdf.set_font("Arial", size=10)
+    pdf.set_text_color(0, 0, 0)  # Black text for data
     for i, line in enumerate(log_entries):
         row_color = (240, 240, 240) if i % 2 == 0 else (255, 255, 255)
         pdf.set_fill_color(*row_color)
         columns = line.strip().split(" | ")
-        pdf.cell(50, 10, columns[0], border=1, align="C", fill=True)
-        pdf.cell(40, 10, columns[1].split(": ")[1],
-                 border=1, align="C", fill=True)
-        pdf.cell(30, 10, columns[2].split(": ")[1],
-                 border=1, align="C", fill=True)
-        pdf.cell(30, 10, columns[3].split(": ")[1],
-                 border=1, align="C", fill=True)
-        pdf.cell(20, 10, columns[4].split(": ")[1],
-                 border=1, align="C", fill=True)
-        pdf.cell(40, 10, columns[5].split(": ")[1],
-                 border=1, align="C", fill=True)
-        pdf.cell(40, 10, columns[6].split(": ")[1],
-                 border=1, align="C", fill=True)
-        pdf.cell(30, 10, columns[7].split(": ")[1],
-                 border=1, align="C", fill=True)
+        for j, col in enumerate(columns[:5]):  # First 5 columns
+            pdf.cell(col_widths[j], 10, col.split(": ")[
+                     1], border=1, align="C", fill=True)
         pdf.ln()
+
+    pdf.ln(10)
+
+    # Image Information Section
+    pdf.set_font("Arial", style="B", size=14)
+    pdf.set_fill_color(0, 128, 0)  # Green background
+    pdf.set_text_color(255, 255, 255)  # White text
+    pdf.cell(200, 10, "Image Information", ln=True, align="L", fill=True)
+    pdf.ln(5)
+
+    # Table for Image Information (Stretched to PDF width)
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.set_fill_color(0, 128, 0)  # Green color for headers
+    pdf.set_text_color(255, 255, 255)  # White text for headers
+    col_widths = [60, 80, 60]  # Adjusted column widths
+    headers = ["Date & Time", "Image File", "Image Size"]
+    for i, header in enumerate(headers):
+        pdf.cell(col_widths[i], 10, header, border=1, align="C", fill=True)
+    pdf.ln()
+
+    pdf.set_font("Arial", size=10)
+    pdf.set_text_color(0, 0, 0)  # Black text for data
+    for i, line in enumerate(log_entries):
+        row_color = (240, 240, 240) if i % 2 == 0 else (255, 255, 255)
+        pdf.set_fill_color(*row_color)
+        columns = line.strip().split(" | ")
+        pdf.cell(col_widths[0], 10, columns[0], border=1, align="C", fill=True)
+        pdf.cell(col_widths[1], 10, columns[7].split(
+            ": ")[1], border=1, align="C", fill=True)
+        pdf.cell(col_widths[2], 10, columns[8].split(
+            ": ")[1], border=1, align="C", fill=True)
+        pdf.ln()
+
+    pdf.ln(10)
+
+    # Hash Information Section
+    pdf.set_font("Arial", style="B", size=14)
+    pdf.set_fill_color(0, 128, 0)  # Green background
+    pdf.set_text_color(255, 255, 255)  # White text
+    pdf.cell(200, 10, "Hash Information", ln=True, align="L", fill=True)
+    pdf.ln(5)
+
+    # Display MD5 and SHA-256 hashes on top of each other
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.set_fill_color(0, 128, 0)  # Green color for headers
+    pdf.set_text_color(255, 255, 255)  # White text for headers
+    pdf.cell(50, 10, "Hash Type", border=1, align="C", fill=True)
+    pdf.cell(140, 10, "Hash Value", border=1, align="C", fill=True)
+    pdf.ln()
+
+    pdf.set_font("Arial", size=10)
+    pdf.set_text_color(0, 0, 0)  # Black text for data
+    for i, line in enumerate(log_entries):
+        columns = line.strip().split(" | ")
+        md5_hash = columns[9].split(": ")[1]
+        sha256_hash = columns[10].split(": ")[1]
+
+        # MD5 Hash Row
+        pdf.set_fill_color(240, 240, 240) if i % 2 == 0 else (255, 255, 255)
+        pdf.cell(50, 10, "MD5", border=1, align="C", fill=True)
+        pdf.cell(140, 10, md5_hash, border=1, align="L", fill=True)
+        pdf.ln()
+
+        # SHA-256 Hash Row
+        pdf.set_fill_color(240, 240, 240) if i % 2 == 0 else (255, 255, 255)
+        pdf.cell(50, 10, "SHA-256", border=1, align="C", fill=True)
+        pdf.cell(140, 10, sha256_hash, border=1, align="L", fill=True)
+        pdf.ln()
+
+    pdf.ln(10)
+
+    # Additional Info Section (Gray Box)
+    pdf.set_font("Arial", style="B", size=14)
+    pdf.set_fill_color(240, 240, 240)  # Gray background
+    pdf.set_text_color(0, 0, 0)  # Black text
+    pdf.cell(200, 10, "Additional Info", ln=True, align="L", fill=True)
+    pdf.ln(5)
+
+    pdf.set_font("Arial", size=12)
+    pdf.set_fill_color(240, 240, 240)  # Gray background
+    pdf.multi_cell(200, 10, "This is additional information about the case. It can include notes, comments, or any other relevant details.",
+                   border=1, align="L", fill=True)
 
     # Save the PDF
     pdf.output(pdf_filename)
@@ -534,8 +744,13 @@ def export_to_pdf():
         "Success", f"Chain of custody exported to {pdf_filename}")
 
     # Clear the log file after exporting
-    with open(EVIDENCE_LOG, "w") as log_file:
-        log_file.write("")
+    try:
+        with open(EVIDENCE_LOG, "w") as log_file:
+            log_file.write("")
+        print("Log file cleared successfully.")  # Debugging statement
+    except Exception as e:
+        messagebox.showerror(
+            "Error", f"Failed to clear the log file: {str(e)}")
 
 
 def get_connected_drives():
