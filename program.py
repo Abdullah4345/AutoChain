@@ -13,6 +13,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Tabl
 import threading
 import re
 from fpdf import FPDF
+from PIL import Image, ImageTk
 import csv
 import hashlib
 
@@ -191,82 +192,97 @@ class ChainOfCustodyTab(ttk.Frame):
     def setup_ui(self):
         """Setup the Chain of Custody tab UI."""
         # Main frame
-        frame = ttk.LabelFrame(self, text="Chain of Custody Form")
-        frame.pack(fill="both", expand=True, padx=0, pady=0)
+        # Load Background Image for Title
+        # Replace with your image path
+        self.title_bg_image = Image.open("back.png")
+        self.title_bg_image = self.title_bg_image.resize(
+            (1200, 290))  # Resize to fit the title area
+        self.title_bg_photo = ImageTk.PhotoImage(self.title_bg_image)
 
+        # Big Frame (LabelFrame) WITHOUT Title
+        # No `text` so we can add our own
+        frame = ttk.LabelFrame(self, padding=(20, 10))
+        frame.pack(fill="both", expand=True, padx=0, pady=(
+            280, 0))  # Moved down for custom title
+
+        # Custom Title with Background Image
+        title_label = tk.Label(self, image=self.title_bg_photo, text="Chain of Custody Form",
+                               compound="center", font=("Arial", 14, "bold"),
+                               fg="white", bd=0, relief="flat")  # White text over image
+        title_label.place(x=0, y=0)  # Adjust position to match frame
         # Form fields
-        ttk.Label(frame, text="Case ID:").place(x=10, y=270)
+        ttk.Label(frame, text="Case ID:").place(x=10, y=0)
         self.case_id_entry = ttk.Entry(frame, width=40)
-        self.case_id_entry.place(x=120, y=270)
+        self.case_id_entry.place(x=120, y=0)
 
-        ttk.Label(frame, text="Full Name:").place(x=10, y=300)
+        ttk.Label(frame, text="Full Name:").place(x=10, y=30)
         self.name_entry = ttk.Entry(frame, width=40)
-        self.name_entry.place(x=120, y=300)
+        self.name_entry.place(x=120, y=30)
 
-        ttk.Label(frame, text="Country:").place(x=10, y=330)
+        ttk.Label(frame, text="Country:").place(x=10, y=60)
         self.country_var = tk.StringVar()
         self.country_dropdown = ttk.Combobox(
             frame, textvariable=self.country_var, values=COUNTRIES, state="readonly", width=39)
-        self.country_dropdown.place(x=120, y=330)
+        self.country_dropdown.place(x=120, y=60)
         self.country_dropdown.bind("<<ComboboxSelected>>", self.update_states)
 
-        ttk.Label(frame, text="State:").place(x=10, y=360)
+        ttk.Label(frame, text="State:").place(x=10, y=90)
         self.state_var = tk.StringVar()
         self.state_dropdown = ttk.Combobox(
             frame, textvariable=self.state_var, state="readonly", width=39)
-        self.state_dropdown.place(x=120, y=360)
+        self.state_dropdown.place(x=120, y=90)
         self.state_dropdown.bind(
             "<<ComboboxSelected>>", self.update_zip_codes)
 
-        ttk.Label(frame, text="Zip Code:", style="TLabel").place(x=10, y=390)
+        ttk.Label(frame, text="Zip Code:", style="TLabel").place(x=10, y=120)
         self.zip_var = tk.StringVar()
         self.zip_dropdown = ttk.Combobox(
             frame, textvariable=self.zip_var, state="readonly", width=39, style="TCombobox")
-        self.zip_dropdown.place(x=120, y=390)
+        self.zip_dropdown.place(x=120, y=120)
 
-        ttk.Label(frame, text="Signature:").place(x=10, y=420)
+        ttk.Label(frame, text="Signature:").place(x=10, y=150)
         self.signature_entry = ttk.Entry(frame, width=40)
-        self.signature_entry.place(x=120, y=420)
+        self.signature_entry.place(x=120, y=150)
 
-        ttk.Label(frame, text="Image File:").place(x=10, y=450)
+        ttk.Label(frame, text="Image File:").place(x=10, y=180)
         self.image_file_entry = ttk.Entry(frame, width=28, state="readonly")
-        self.image_file_entry.place(x=120, y=450)
+        self.image_file_entry.place(x=120, y=180)
         ttk.Button(frame, text="   Browse  ",
-                   command=self.browse_image_file).place(x=390, y=450)
+                   command=self.browse_image_file).place(x=390, y=180)
 
-        ttk.Label(frame, text="Image Size:").place(x=10, y=480)
+        ttk.Label(frame, text="Image Size:").place(x=10, y=210)
         self.image_size_label = ttk.Label(frame, text="0 MB")
-        self.image_size_label.place(x=120, y=480)
+        self.image_size_label.place(x=120, y=210)
 
         # Define a larger font
         # You can adjust the font name and size as needed
         large_font = ("Arial", 10)
 
         # MD5 Hash Label
-        ttk.Label(frame, text="MD5 Hash:").place(x=10, y=510)
+        ttk.Label(frame, text="MD5 Hash:").place(x=10, y=240)
         self.md5_hash_label = ttk.Label(
             frame, text="00000000000000000000000000000000", font=large_font)
-        self.md5_hash_label.place(x=120, y=510)
+        self.md5_hash_label.place(x=120, y=240)
 
         # SHA-256 Hash Label
-        ttk.Label(frame, text="SHA-256 Hash:").place(x=10, y=540)
+        ttk.Label(frame, text="SHA-256 Hash:").place(x=10, y=270)
         self.sha256_hash_label = ttk.Label(
             frame, text="0000000000000000000000000000000000000000000000000000000000000000", font=large_font)
-        self.sha256_hash_label.place(x=120, y=540)
+        self.sha256_hash_label.place(x=120, y=270)
 
         # Additional Feedback Input Field
-        ttk.Label(frame, text="Additional Feedback:").place(x=600, y=265)
+        ttk.Label(frame, text="Additional Feedback:").place(x=600, y=-10)
         self.additional_feedback = tk.Text(
-            frame, width=74, height=24, wrap=tk.WORD)
-        self.additional_feedback.place(x=600, y=285)
+            frame, width=74, height=23, wrap=tk.WORD)
+        self.additional_feedback.place(x=590, y=10)
 
         # Submit button
         ttk.Button(frame, text="                Submit              ",
-                   command=self.submit_form).place(x=120, y=570)
+                   command=self.submit_form).place(x=120, y=290)
 
         # Export to PDF button
         ttk.Button(frame, text="          Export to PDF        ",
-                   command=self.export_to_pdf).place(x=310, y=570)
+                   command=self.export_to_pdf).place(x=310, y=290)
 
     def update_states(self, event):
         """Update the states dropdown based on the selected country."""
@@ -459,7 +475,7 @@ class ChainOfCustodyTab(ttk.Frame):
         pdf.set_font("Arial", style="B", size=12)
         pdf.set_fill_color(0, 128, 0)  # Green color for headers
         pdf.set_text_color(255, 255, 255)  # White text for headers
-        col_widths = [40, 40, 30, 30, 30]  # Equal column widths
+        col_widths = [40, 40, 35, 30, 25]  # Equal column widths
         headers = ["Date & Time", "Name", "Country", "State", "Zip Code"]
         for i, header in enumerate(headers):
             pdf.cell(col_widths[i], 10, header, border=1, align="C", fill=True)
@@ -592,7 +608,7 @@ class ChainOfCustodyTab(ttk.Frame):
         pdf.ln(5)
 
         # Feedback Text (Light Gray Background, Black Text)
-        pdf.set_font("Arial", size=12)
+        pdf.set_font("Arial", size=9)
         # Light gray background for the feedback text
         pdf.set_fill_color(240, 240, 240)
         pdf.set_text_color(0, 0, 0)  # Black text for the feedback text
