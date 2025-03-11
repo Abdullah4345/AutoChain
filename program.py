@@ -194,7 +194,7 @@ class ChainOfCustodyTab(ttk.Frame):
         # Main frame
         # Load Background Image for Title
         # Replace with your image path
-        self.title_bg_image = Image.open("back.png")
+        self.title_bg_image = Image.open("background.png")
         self.title_bg_image = self.title_bg_image.resize(
             (1200, 290))  # Resize to fit the title area
         self.title_bg_photo = ImageTk.PhotoImage(self.title_bg_image)
@@ -206,7 +206,7 @@ class ChainOfCustodyTab(ttk.Frame):
             280, 0))  # Moved down for custom title
 
         # Custom Title with Background Image
-        title_label = tk.Label(self, image=self.title_bg_photo, text="Chain of Custody Form",
+        title_label = tk.Label(self, image=self.title_bg_photo, text="",
                                compound="center", font=("Arial", 14, "bold"),
                                fg="white", bd=0, relief="flat")  # White text over image
         title_label.place(x=0, y=0)  # Adjust position to match frame
