@@ -56,83 +56,78 @@ class ChainOfCustodyTab(ttk.Frame):
         """Setup the Chain of Custody tab UI."""
         # Main frame
         frame = ttk.LabelFrame(self, text="Chain of Custody Form")
-        frame.pack(fill="both", expand=True, padx=10, pady=10)
+        frame.pack(fill="both", expand=True, padx=0, pady=0)
 
         # Form fields
-        ttk.Label(frame, text="Case ID:").grid(
-            row=0, column=0, padx=5, pady=5, sticky="e")
+        ttk.Label(frame, text="Case ID:").place(x=10, y=270)
         self.case_id_entry = ttk.Entry(frame, width=40)
-        self.case_id_entry.grid(row=0, column=1, padx=5, pady=5, sticky="w")
+        self.case_id_entry.place(x=120, y=270)
 
-        ttk.Label(frame, text="Full Name:").grid(
-            row=1, column=0, padx=5, pady=5, sticky="e")
+        ttk.Label(frame, text="Full Name:").place(x=10, y=300)
         self.name_entry = ttk.Entry(frame, width=40)
-        self.name_entry.grid(row=1, column=1, padx=5, pady=5, sticky="w")
+        self.name_entry.place(x=120, y=300)
 
-        ttk.Label(frame, text="Country:").grid(
-            row=2, column=0, padx=5, pady=5, sticky="e")
+        ttk.Label(frame, text="Country:").place(x=10, y=330)
         self.country_var = tk.StringVar()
         self.country_dropdown = ttk.Combobox(
-            frame, textvariable=self.country_var, values=COUNTRIES, state="readonly")
-        self.country_dropdown.grid(row=2, column=1, padx=5, pady=5, sticky="w")
+            frame, textvariable=self.country_var, values=COUNTRIES, state="readonly", width=39)
+        self.country_dropdown.place(x=120, y=330)
         self.country_dropdown.bind("<<ComboboxSelected>>", self.update_states)
 
-        ttk.Label(frame, text="State:").grid(
-            row=3, column=0, padx=5, pady=5, sticky="e")
+        ttk.Label(frame, text="State:").place(x=10, y=360)
         self.state_var = tk.StringVar()
         self.state_dropdown = ttk.Combobox(
-            frame, textvariable=self.state_var, state="readonly")
-        self.state_dropdown.grid(row=3, column=1, padx=5, pady=5, sticky="w")
+            frame, textvariable=self.state_var, state="readonly", width=39)
+        self.state_dropdown.place(x=120, y=360)
         self.state_dropdown.bind("<<ComboboxSelected>>", self.update_zip_codes)
 
-        ttk.Label(frame, text="Zip Code (5 digits):").grid(
-            row=4, column=0, padx=5, pady=5, sticky="e")
+        ttk.Label(frame, text="Zip Code:").place(x=10, y=390)
         self.zip_entry = ttk.Entry(frame, width=40)
-        self.zip_entry.grid(row=4, column=1, padx=5, pady=5, sticky="w")
+        self.zip_entry.place(x=120, y=390)
 
-        ttk.Label(frame, text="Signature:").grid(
-            row=5, column=0, padx=5, pady=5, sticky="e")
+        ttk.Label(frame, text="Signature:").place(x=10, y=420)
         self.signature_entry = ttk.Entry(frame, width=40)
-        self.signature_entry.grid(row=5, column=1, padx=5, pady=5, sticky="w")
+        self.signature_entry.place(x=120, y=420)
 
-        ttk.Label(frame, text="Image File:").grid(
-            row=6, column=0, padx=5, pady=5, sticky="e")
-        self.image_file_entry = ttk.Entry(frame, width=30)
-        self.image_file_entry.grid(row=6, column=1, padx=5, pady=5, sticky="w")
-        ttk.Button(frame, text="Browse", command=self.browse_image_file).grid(
-            row=6, column=2, padx=5, pady=5)
+        ttk.Label(frame, text="Image File:").place(x=10, y=450)
+        self.image_file_entry = ttk.Entry(frame, width=28, state="readonly")
+        self.image_file_entry.place(x=120, y=450)
+        ttk.Button(frame, text="   Browse  ",
+                   command=self.browse_image_file).place(x=390, y=450)
 
-        ttk.Label(frame, text="Image Size:").grid(
-            row=7, column=0, padx=5, pady=5, sticky="e")
+        ttk.Label(frame, text="Image Size:").place(x=10, y=480)
         self.image_size_label = ttk.Label(frame, text="0 MB")
-        self.image_size_label.grid(row=7, column=1, padx=5, pady=5, sticky="w")
+        self.image_size_label.place(x=120, y=480)
 
-        ttk.Label(frame, text="MD5 Hash:").grid(
-            row=8, column=0, padx=5, pady=5, sticky="e")
-        self.md5_hash_label = ttk.Label(frame, text="")
-        self.md5_hash_label.grid(row=8, column=1, padx=5, pady=5, sticky="w")
+        # Define a larger font
+        # You can adjust the font name and size as needed
+        large_font = ("Arial", 10)
 
-        ttk.Label(frame, text="SHA-256 Hash:").grid(row=9,
-                                                    column=0, padx=5, pady=5, sticky="e")
-        self.sha256_hash_label = ttk.Label(frame, text="")
-        self.sha256_hash_label.grid(
-            row=9, column=1, padx=5, pady=5, sticky="w")
+        # MD5 Hash Label
+        ttk.Label(frame, text="MD5 Hash:").place(x=10, y=510)
+        self.md5_hash_label = ttk.Label(
+            frame, text="00000000000000000000000000000000", font=large_font)
+        self.md5_hash_label.place(x=120, y=510)
+
+        # SHA-256 Hash Label
+        ttk.Label(frame, text="SHA-256 Hash:").place(x=10, y=540)
+        self.sha256_hash_label = ttk.Label(
+            frame, text="0000000000000000000000000000000000000000000000000000000000000000", font=large_font)
+        self.sha256_hash_label.place(x=120, y=540)
 
         # Additional Feedback Input Field
-        ttk.Label(frame, text="Additional Feedback:").grid(
-            row=10, column=0, padx=5, pady=5, sticky="ne")
+        ttk.Label(frame, text="Additional Feedback:").place(x=600, y=265)
         self.additional_feedback = tk.Text(
-            frame, width=60, height=10, wrap=tk.WORD)
-        self.additional_feedback.grid(
-            row=10, column=1, columnspan=2, padx=5, pady=5, sticky="w")
+            frame, width=74, height=24, wrap=tk.WORD)
+        self.additional_feedback.place(x=600, y=285)
 
         # Submit button
-        ttk.Button(frame, text="Submit", command=self.submit_form).grid(
-            row=11, column=1, padx=5, pady=10)
+        ttk.Button(frame, text="                Submit              ",
+                   command=self.submit_form).place(x=120, y=570)
 
         # Export to PDF button
-        ttk.Button(frame, text="Export to PDF", command=self.export_to_pdf).grid(
-            row=11, column=2, padx=5, pady=10)
+        ttk.Button(frame, text="          Export to PDF        ",
+                   command=self.export_to_pdf).place(x=310, y=570)
 
     def update_states(self, event=None):
         """Update the state dropdown based on the selected country."""
@@ -152,30 +147,49 @@ class ChainOfCustodyTab(ttk.Frame):
             self.zip_entry.insert(0, ZIP_CODES[selected_state][0])
 
     def browse_image_file(self):
-        """Browse for an image file, calculate its size, MD5, and SHA-256 hashes."""
+        """Open a file dialog to select an image file and update the entry field."""
         file_path = filedialog.askopenfilename(
-            filetypes=[("Image Files", "*.img")])
-        if file_path:
-            self.image_file_entry.delete(0, tk.END)
+            title="Select an Image File",
+            filetypes=[("Image Files", "*.img *.jpg *.png *.bmp *.tiff")]
+        )
+        if file_path:  # If a file was selected
+            # Temporarily enable the entry to update it
+            self.image_file_entry.config(state="normal")
+            self.image_file_entry.delete(0, tk.END)  # Clear any existing text
+            # Insert the selected file path
             self.image_file_entry.insert(0, file_path)
+            self.image_file_entry.config(
+                state="readonly")  # Set it back to readonly
 
-            # Calculate and display image size
-            file_size_mb = os.path.getsize(file_path) / (1024 * 1024)
+            # Update the image size label
+            self.update_image_size(file_path)
+
+            # Calculate and display the MD5 and SHA-256 hashes
+            self.calculate_hashes(file_path)
+
+    def update_image_size(self, file_path):
+        """Update the image size label with the size of the selected file."""
+        try:
+            file_size = os.path.getsize(file_path)  # Get file size in bytes
+            file_size_mb = file_size / (1024 * 1024)  # Convert to MB
             self.image_size_label.config(text=f"{file_size_mb:.2f} MB")
+        except Exception as e:
+            self.image_size_label.config(text="0 MB")
+            print(f"Error updating image size: {e}")
 
-            # Calculate and display MD5 and SHA-256 hashes
-            md5_hash = self.calculate_hash(file_path, algorithm="md5")
-            sha256_hash = self.calculate_hash(file_path, algorithm="sha256")
-            self.md5_hash_label.config(text=md5_hash)
-            self.sha256_hash_label.config(text=sha256_hash)
-
-    def calculate_hash(self, file_path, algorithm="sha256"):
-        """Calculate the hash of a file using the specified algorithm."""
-        hash_func = hashlib.new(algorithm)
-        with open(file_path, "rb") as f:
-            for chunk in iter(lambda: f.read(4096), b""):
-                hash_func.update(chunk)
-        return hash_func.hexdigest()
+    def calculate_hashes(self, file_path):
+        """Calculate and display the MD5 and SHA-256 hashes of the selected file."""
+        try:
+            with open(file_path, "rb") as f:
+                file_data = f.read()
+                md5_hash = hashlib.md5(file_data).hexdigest()
+                sha256_hash = hashlib.sha256(file_data).hexdigest()
+                self.md5_hash_label.config(text=md5_hash)
+                self.sha256_hash_label.config(text=sha256_hash)
+        except Exception as e:
+            self.md5_hash_label.config(text="")
+            self.sha256_hash_label.config(text="")
+            print(f"Error calculating hashes: {e}")
 
     def submit_form(self):
         """Submit the form and log the chain of custody."""
@@ -781,8 +795,8 @@ class ForensicApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Forensic Evidence Acquisition Tool")
-        self.geometry("580x500")
-        # self.resizable(False, False)
+        self.geometry("1200x700")
+        self.resizable(False, False)
 
         # Configure the style for the notebook tabs
         self.style = ttk.Style()
@@ -837,7 +851,7 @@ class ForensicApp(tk.Tk):
         self.output_image_entry = ttk.Entry(frame, width=20, font=label_font)
         self.output_image_entry.grid(row=2, column=1, padx=5, pady=5)
 
-        ttk.Button(frame, text="      Browse       ", command=self.browse_output_image, style='Custom.TButton').grid(
+        ttk.Button(frame, text="      Browse     ", command=self.browse_output_image, style='Custom.TButton').grid(
             row=2, column=2, padx=5, pady=5)
 
         ttk.Label(frame, text="Disk Size (GB):", font=label_font).grid(
