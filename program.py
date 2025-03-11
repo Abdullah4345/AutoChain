@@ -29,20 +29,156 @@ OUTPUT_DIR = "forensic_evidence"
 EVIDENCE_LOG = os.path.join(OUTPUT_DIR, "chain_of_custody.log")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# Sample data for dropdowns
-COUNTRIES = ["United States", "Canada", "United Kingdom", "Australia"]
+COUNTRIES = [
+    "United States", "Canada", "United Kingdom", "Australia",
+    "Saudi Arabia", "United Arab Emirates", "Egypt", "Turkey", "Iran",
+    "Iraq", "Jordan", "Kuwait", "Lebanon", "Oman", "Qatar",
+    "Bahrain", "Syria", "Yemen", "Palestine"
+]
+
 STATES = {
-    "United States": ["California", "Texas", "New York", "Florida"],
-    "Canada": ["Ontario", "Quebec", "British Columbia", "Alberta"],
+    "United States": [
+        "California", "Texas", "New York", "Florida", "Illinois", "Pennsylvania",
+        "Ohio", "Georgia", "North Carolina", "Michigan"
+    ],
+    "Canada": [
+        "Ontario", "Quebec", "British Columbia", "Alberta", "Manitoba", "Saskatchewan",
+        "Nova Scotia", "New Brunswick", "Newfoundland and Labrador", "Prince Edward Island"
+    ],
     "United Kingdom": ["England", "Scotland", "Wales", "Northern Ireland"],
-    "Australia": ["New South Wales", "Victoria", "Queensland", "Western Australia"],
+    "Australia": [
+        "New South Wales", "Victoria", "Queensland", "Western Australia",
+        "South Australia", "Tasmania", "Northern Territory", "Australian Capital Territory"
+    ],
+    "Saudi Arabia": ["Riyadh", "Makkah", "Madinah", "Eastern Province", "Jizan"],
+    "United Arab Emirates": ["Abu Dhabi", "Dubai", "Sharjah", "Ajman", "Fujairah"],
+    "Egypt": ["Cairo", "Giza", "Alexandria", "Dakahlia", "Aswan"],
+    "Turkey": ["Istanbul", "Ankara", "Izmir", "Bursa", "Antalya"],
+    "Iran": ["Tehran", "Isfahan", "Mashhad", "Shiraz", "Tabriz"],
+    "Iraq": ["Baghdad", "Basra", "Mosul", "Najaf", "Erbil"],
+    "Jordan": ["Amman", "Irbid", "Zarqa", "Aqaba", "Mafraq"],
+    "Kuwait": ["Al Asimah", "Hawalli", "Farwaniya", "Ahmadi", "Jahra"],
+    "Lebanon": ["Beirut", "Mount Lebanon", "North Lebanon", "South Lebanon", "Bekaa"],
+    "Oman": ["Muscat", "Dhofar", "Al Batinah", "Al Sharqiyah", "Ad Dakhiliyah"],
+    "Qatar": ["Doha", "Al Rayyan", "Al Wakrah", "Umm Salal", "Al Khor"],
+    "Bahrain": ["Manama", "Muharraq", "Riffa", "Isa Town", "Hamad Town"],
+    "Syria": ["Damascus", "Aleppo", "Homs", "Latakia", "Hama"],
+    "Yemen": ["Sana'a", "Aden", "Taiz", "Al Hudaydah", "Hadramaut"],
+    "Palestine": ["West Bank", "Gaza Strip"]
 }
+
 ZIP_CODES = {
-    "California": ["90001", "90210", "94016"],
-    "Texas": ["75001", "77001", "78201"],
-    "New York": ["10001", "10025", "11201"],
-    "Florida": ["32003", "33101", "33401"],
-    # Add more as needed
+    # United States
+    "California": ["90001", "90210", "94016", "92101", "90650"],
+    "Texas": ["75001", "77001", "78201", "73301", "79936"],
+    "New York": ["10001", "10025", "11201", "12207", "14604"],
+    "Florida": ["32003", "33101", "33401", "32801", "33601"],
+    "Illinois": ["60007", "60601", "62701", "61820", "60411"],
+    "Pennsylvania": ["19104", "15213", "17101", "16801", "18501"],
+    "Ohio": ["44101", "43210", "45201", "45502", "43601"],
+    "Georgia": ["30301", "31401", "31901", "31701", "39801"],
+    "North Carolina": ["27513", "28201", "27701", "28401", "28601"],
+    "Michigan": ["48201", "49501", "48901", "49007", "48502"],
+
+    # Canada
+    "Ontario": ["M5A 1A1", "M4B 1B3", "L3R 5Z6", "N2L 3G1", "P7B 6G1"],
+    "Quebec": ["G1A 0A2", "H2X 1Y9", "J7V 5W1", "J4K 2T1", "G3J 1R5"],
+    "British Columbia": ["V5K 0A1", "V6B 4Y1", "V8W 1A3", "V9T 6P1", "V3H 2L9"],
+    "Alberta": ["T2P 1M4", "T3K 0L3", "T5J 0Y2", "T6G 2R3", "T8N 1M1"],
+    "Manitoba": ["R3B 0X3", "R2C 5N1", "R0G 0A1", "R1A 3P3", "R7A 2H7"],
+    "Saskatchewan": ["S4P 3Y2", "S7N 3R2", "S9H 1Y3", "S0G 3K0", "S0E 1E0"],
+    "Nova Scotia": ["B3H 1W2", "B4N 3V7", "B0T 1K0", "B2N 5G7", "B9A 2K5"],
+    "New Brunswick": ["E2L 4G3", "E3B 6A4", "E1C 1H5", "E7M 2H6", "E5N 4A3"],
+    "Newfoundland and Labrador": ["A1B 3S6", "A2V 2R1", "A0P 1E0", "A1N 3K7", "A5A 1B3"],
+    "Prince Edward Island": ["C1A 7N8", "C0A 1H7", "C0B 3G4", "C1E 1M5", "C1N 4J5"],
+
+    # United Kingdom
+    "England": ["E1 6AN", "SW1A 1AA", "M1 1AE", "B1 1BB", "LS1 3AA"],
+    "Scotland": ["EH1 1BB", "G1 2FF", "IV3 8LJ", "AB10 1AN", "DD1 4HN"],
+    "Wales": ["CF10 1DD", "LL55 4UR", "SA1 3SN", "NP20 1FS", "LD1 5HG"],
+    "Northern Ireland": ["BT1 1AA", "BT48 6HJ", "BT71 4QU", "BT28 3PP", "BT61 7DL"],
+
+    # Australia
+    "New South Wales": ["2000", "2150", "2280", "2500", "2747"],
+    "Victoria": ["3000", "3122", "3805", "3550", "3977"],
+    "Queensland": ["4000", "4217", "4810", "4113", "4870"],
+    "Western Australia": ["6000", "6151", "6722", "6530", "6210"],
+    "South Australia": ["5000", "5152", "5290", "5114", "5700"],
+    "Tasmania": ["7000", "7250", "7310", "7468", "7054"],
+    "Northern Territory": ["0800", "0830", "0870", "0822", "0850"],
+    "Australian Capital Territory": ["2600", "2617", "2620", "2612", "2913"],
+    "Riyadh": ["11564", "12271", "13312", "14231"],
+    "Makkah": ["21955", "24321", "22345", "21961"],
+    "Madinah": ["42311", "42523", "41311", "41541"],
+    "Eastern Province": ["31952", "31512", "31911", "32445"],
+    "Jizan": ["82611", "82722", "82843", "82555"],
+    "Abu Dhabi": ["51133", "51222", "51311", "51444"],
+    "Dubai": ["00000", "11222", "22333", "33444"],
+    "Sharjah": ["61111", "61222", "61333", "61444"],
+    "Ajman": ["71511", "71622", "71733", "71844"],
+    "Fujairah": ["81911", "82022", "82133", "82244"],
+    "Cairo": ["11511", "11331", "11865", "11936"],
+    "Giza": ["12511", "12611", "12736", "12845"],
+    "Alexandria": ["21511", "21611", "21745", "21852"],
+    "Dakahlia": ["35511", "35622", "35733", "35844"],
+    "Aswan": ["81511", "81622", "81733", "81844"],
+    "Istanbul": ["34000", "34110", "34220", "34330"],
+    "Ankara": ["06000", "06120", "06230", "06340"],
+    "Izmir": ["35000", "35110", "35220", "35330"],
+    "Bursa": ["16000", "16110", "16220", "16330"],
+    "Antalya": ["07000", "07110", "07220", "07330"],
+    "Tehran": ["11369", "11479", "11589", "11699"],
+    "Isfahan": ["81746", "81856", "81966", "82076"],
+    "Mashhad": ["91999", "92012", "92123", "92234"],
+    "Shiraz": ["71364", "71474", "71584", "71694"],
+    "Tabriz": ["51699", "51712", "51823", "51934"],
+    "Baghdad": ["10001", "10025", "10136", "10247"],
+    "Basra": ["61001", "61015", "61126", "61237"],
+    "Mosul": ["41001", "41025", "41136", "41247"],
+    "Najaf": ["54001", "54025", "54136", "54247"],
+    "Erbil": ["44001", "44025", "44136", "44247"],
+    "Amman": ["11110", "11220", "11330", "11440"],
+    "Irbid": ["22110", "22220", "22330", "22440"],
+    "Zarqa": ["13110", "13220", "13330", "13440"],
+    "Aqaba": ["77110", "77220", "77330", "77440"],
+    "Mafraq": ["26110", "26220", "26330", "26440"],
+    "Al Asimah": ["13001", "13102", "13203", "13304"],
+    "Hawalli": ["20001", "20112", "20223", "20334"],
+    "Farwaniya": ["40001", "40112", "40223", "40334"],
+    "Ahmadi": ["60001", "60112", "60223", "60334"],
+    "Jahra": ["50001", "50112", "50223", "50334"],
+    "Beirut": ["11001", "11102", "11203", "11304"],
+    "Mount Lebanon": ["20001", "20112", "20223", "20334"],
+    "North Lebanon": ["30001", "30112", "30223", "30334"],
+    "South Lebanon": ["40001", "40112", "40223", "40334"],
+    "Bekaa": ["50001", "50112", "50223", "50334"],
+    "Muscat": ["100", "101", "102", "103"],
+    "Dhofar": ["211", "212", "213", "214"],
+    "Al Batinah": ["311", "312", "313", "314"],
+    "Al Sharqiyah": ["411", "412", "413", "414"],
+    "Ad Dakhiliyah": ["511", "512", "513", "514"],
+    "Doha": ["00000", "11111", "22222", "33333"],
+    "Al Rayyan": ["45000", "45111", "45222", "45333"],
+    "Al Wakrah": ["55000", "55111", "55222", "55333"],
+    "Umm Salal": ["65000", "65111", "65222", "65333"],
+    "Al Khor": ["75000", "75111", "75222", "75333"],
+    "Manama": ["1000", "2000", "3000", "4000"],
+    "Muharraq": ["5000", "5100", "5200", "5300"],
+    "Riffa": ["6000", "6100", "6200", "6300"],
+    "Isa Town": ["7000", "7100", "7200", "7300"],
+    "Hamad Town": ["8000", "8100", "8200", "8300"],
+    "Damascus": ["0000", "1111", "2222", "3333"],
+    "Aleppo": ["4000", "4111", "4222", "4333"],
+    "Homs": ["5000", "5111", "5222", "5333"],
+    "Latakia": ["6000", "6111", "6222", "6333"],
+    "Hama": ["7000", "7111", "7222", "7333"],
+    "Sana'a": ["0000", "1111", "2222", "3333"],
+    "Aden": ["2000", "2011", "2022", "2033"],
+    "Taiz": ["3000", "3011", "3022", "3033"],
+    "Al Hudaydah": ["4000", "4011", "4022", "4033"],
+    "Hadramaut": ["5000", "5011", "5022", "5033"],
+    "West Bank": ["1000", "2000", "3000", "4000"],
+    "Gaza Strip": ["1000", "2000", "3000", "4000"]
 }
 
 
@@ -79,11 +215,14 @@ class ChainOfCustodyTab(ttk.Frame):
         self.state_dropdown = ttk.Combobox(
             frame, textvariable=self.state_var, state="readonly", width=39)
         self.state_dropdown.place(x=120, y=360)
-        self.state_dropdown.bind("<<ComboboxSelected>>", self.update_zip_codes)
+        self.state_dropdown.bind(
+            "<<ComboboxSelected>>", self.update_zip_codes)
 
-        ttk.Label(frame, text="Zip Code:").place(x=10, y=390)
-        self.zip_entry = ttk.Entry(frame, width=40)
-        self.zip_entry.place(x=120, y=390)
+        ttk.Label(frame, text="Zip Code:", style="TLabel").place(x=10, y=390)
+        self.zip_var = tk.StringVar()
+        self.zip_dropdown = ttk.Combobox(
+            frame, textvariable=self.zip_var, state="readonly", width=39, style="TCombobox")
+        self.zip_dropdown.place(x=120, y=390)
 
         ttk.Label(frame, text="Signature:").place(x=10, y=420)
         self.signature_entry = ttk.Entry(frame, width=40)
@@ -129,22 +268,23 @@ class ChainOfCustodyTab(ttk.Frame):
         ttk.Button(frame, text="          Export to PDF        ",
                    command=self.export_to_pdf).place(x=310, y=570)
 
-    def update_states(self, event=None):
-        """Update the state dropdown based on the selected country."""
+    def update_states(self, event):
+        """Update the states dropdown based on the selected country."""
         selected_country = self.country_var.get()
         if selected_country in STATES:
             self.state_dropdown["values"] = STATES[selected_country]
-            self.state_dropdown.current(0)
-            self.update_zip_codes()
+            self.state_dropdown.current(0)  # Select the first state by default
+            self.update_zip_codes()  # Update ZIP codes for the first state
 
     def update_zip_codes(self, event=None):
-        """Update the zip code dropdown based on the selected state."""
+        """Update the ZIP codes dropdown based on the selected state."""
         selected_state = self.state_var.get()
         if selected_state in ZIP_CODES:
-            # If you want to auto-fill the zip code, you can do something like this:
-            self.zip_entry.delete(0, tk.END)
-            # Insert the first zip code for the selected state
-            self.zip_entry.insert(0, ZIP_CODES[selected_state][0])
+            self.zip_dropdown["values"] = ZIP_CODES[selected_state]
+            # Select the first ZIP code by default
+            self.zip_dropdown.current()
+
+    # Ensure the zip_dropdown is correctly bound to the event
 
     def browse_image_file(self):
         """Open a file dialog to select an image file and update the entry field."""
@@ -197,7 +337,7 @@ class ChainOfCustodyTab(ttk.Frame):
         name = self.name_entry.get()
         country = self.country_var.get()
         state = self.state_var.get()
-        zip_code = self.zip_entry.get()
+        zip_code = self.zip_dropdown.get()
         signature = self.signature_entry.get()
         image_file = self.image_file_entry.get()
         image_size = self.image_size_label.cget("text")
