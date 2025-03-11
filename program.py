@@ -191,25 +191,20 @@ class ChainOfCustodyTab(ttk.Frame):
 
     def setup_ui(self):
         """Setup the Chain of Custody tab UI."""
-        # Main frame
-        # Load Background Image for Title
-        # Replace with your image path
-        self.title_bg_image = Image.open("background.png")
+
+        self.title_bg_image = Image.open("Background.png")
         self.title_bg_image = self.title_bg_image.resize(
             (1200, 290))  # Resize to fit the title area
         self.title_bg_photo = ImageTk.PhotoImage(self.title_bg_image)
 
-        # Big Frame (LabelFrame) WITHOUT Title
-        # No `text` so we can add our own
         frame = ttk.LabelFrame(self, padding=(20, 10))
         frame.pack(fill="both", expand=True, padx=0, pady=(
-            280, 0))  # Moved down for custom title
+            280, 0))
 
-        # Custom Title with Background Image
         title_label = tk.Label(self, image=self.title_bg_photo, text="",
                                compound="center", font=("Arial", 14, "bold"),
                                fg="white", bd=0, relief="flat")  # White text over image
-        title_label.place(x=0, y=0)  # Adjust position to match frame
+        title_label.place(x=0, y=0)
         # Form fields
         ttk.Label(frame, text="Case ID:").place(x=10, y=0)
         self.case_id_entry = ttk.Entry(frame, width=40)
@@ -367,9 +362,16 @@ class ChainOfCustodyTab(ttk.Frame):
             messagebox.showerror("Error", "Zip Code must be a 5-digit number.")
             return
 
+        # Check if all required fields are filled
         if not all([case_id, name, country, state, zip_code, signature, image_file, md5_hash, sha256_hash]):
             messagebox.showerror(
                 "Error", "Please fill out all fields and select an image file.")
+            return
+
+        # Check if the case ID already exists in case_log.csv
+        if self.case_id_exists(case_id):
+            messagebox.showerror(
+                "Error", f"Case ID {case_id} already exists. Please use a unique Case ID.")
             return
 
         # Log the chain of custody
@@ -397,6 +399,19 @@ class ChainOfCustodyTab(ttk.Frame):
             writer.writerow([case_id, md5_hash, sha256_hash])
 
         messagebox.showinfo("Success", "Chain of custody logged successfully.")
+
+    def case_id_exists(self, case_id):
+        """Check if the case ID already exists in case_log.csv."""
+        if not os.path.exists("case_log.csv"):
+            return False  # File doesn't exist, so case ID is unique
+
+        with open("case_log.csv", "r") as csv_file:
+            reader = csv.reader(csv_file)
+            for row in reader:
+                # Check if the first column matches the case ID
+                if row and row[0] == case_id:
+                    return True
+        return False
 
     def export_to_pdf(self):
         """Exports the chain of custody log to a professional-looking PDF and clears the log."""
