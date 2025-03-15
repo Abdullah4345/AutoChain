@@ -282,7 +282,7 @@ class ChainOfCustodyTab(ttk.Frame):
     def update_states(self, event):
         """Update the states dropdown based on the selected country."""
         selected_country = self.country_var.get()
-        if selected_country in STATES:
+        if (selected_country in STATES):
             self.state_dropdown["values"] = STATES[selected_country]
             self.state_dropdown.current(0)  # Select the first state by default
             self.update_zip_codes()  # Update ZIP codes for the first state
@@ -358,9 +358,6 @@ class ChainOfCustodyTab(ttk.Frame):
             "1.0", tk.END).strip()
 
         # Validate zip code (must be 5 digits)
-        if not zip_code.isdigit() or len(zip_code) != 5:
-            messagebox.showerror("Error", "Zip Code must be a 5-digit number.")
-            return
 
         # Check if all required fields are filled
         if not all([case_id, name, country, state, zip_code, signature, image_file, md5_hash, sha256_hash]):
@@ -714,6 +711,8 @@ def create_disk_image(disk_device, output_image, disk_size_gb, progress_callback
         total_size_bytes = disk_size_gb * 1024 * 1024 * 1024  # Convert GB to bytes
         total_size_mb = disk_size_gb * 1024  # Convert GB to MB
 
+        progress = 0  # Initialize progress variable
+
         while True:
             output = process.stderr.readline()
             if output == '' and process.poll() is not None:
@@ -755,7 +754,6 @@ def create_disk_image(disk_device, output_image, disk_size_gb, progress_callback
     except Exception as e:
         log_chain_of_custody("Disk Imaging Failed", f"Error: {str(e)}")
         progress_callback(f"Disk imaging failed: {str(e)}")
-
 
 def calculate_hash(file_path, algorithm=HASH_ALGORITHM):
     """Calculate the cryptographic hash of a file."""
@@ -979,7 +977,7 @@ class ForensicApp(tk.Tk):
 
         # Create the tabs
         # Disk Imaging tab
-        self.tab1 = tk.Frame(self.tab_control, bg="#c71585")
+        self.tab1 = tk.Frame(self.tab_control, bg="#530a0a")
         self.tab2 = ChainOfCustodyTab(self.tab_control)  # Chain of Custody tab
         # Integrity Verification tab
         self.tab3 = tk.Frame(self.tab_control, bg="#b6d0e2")
@@ -998,59 +996,109 @@ class ForensicApp(tk.Tk):
 
     def setup_disk_imaging_tab(self):
         """Setup the Disk Imaging tab."""
-        frame = ttk.LabelFrame(self.tab1, text="Disk Imaging")
-        frame.pack(fill="both", expand=True, padx=10, pady=10)
+        # Define fonts and colors
+        label_font = ('Courier', 13)
+        button_font = ('Courier', 13, 'bold')
+        label_color = "#cb1717"
+        button_bg = "#530a0a"
+        button_fg = "#cb1717"
+        button_relief = "flat"
+        button_cursor = "hand2"
+        button_width = 20
+        button_height = 2
 
-        label_font = ('Arial', 13)  # Change font and size here
+        # Drive selection
+        tk.Label(self.tab1, text="Select Flash Drive:",
+                 font=label_font, width=button_width, height=button_height, bg="#530a0a", fg=label_color).place(x=300, y=200)
 
-        # Define a custom style for the buttons
-        self.style.configure('Custom.TButton', font=label_font)
-
-        ttk.Label(frame, text="Select Flash Drive:", font=label_font).grid(
-            row=1, column=0, padx=5, pady=5)
         self.drive_var = tk.StringVar()
         self.drive_dropdown = ttk.Combobox(
-            frame, textvariable=self.drive_var, state="readonly", font=label_font)
-        self.drive_dropdown.grid(row=1, column=1, padx=5, pady=5)
+            self.tab1, textvariable=self.drive_var,
+            state="readonly", font=label_font, width=20)
+        self.drive_dropdown.place(x=450, y=200)
         self.refresh_drives()
 
-        ttk.Button(frame, text="Refresh Drives", command=self.refresh_drives, style='Custom.TButton').grid(
-            row=1, column=2, padx=5, pady=5)
+        # Refresh Drives button
+        refresh_btn = tk.Button(self.tab1,
+                                text="🔄",
+                                command=self.refresh_drives,
+                                font=button_font,
+                                bg=button_bg,
+                                fg=button_fg,
 
-        ttk.Label(frame, text="Output Image:", font=label_font).grid(
-            row=2, column=0, padx=5, pady=5)
-        self.output_image_entry = ttk.Entry(frame, width=20, font=label_font)
-        self.output_image_entry.grid(row=2, column=1, padx=5, pady=5)
+                                relief=button_relief,
+                                cursor=button_cursor,
+                                bd=0, width=2, height=2,
+                                highlightthickness=0)
+        refresh_btn.place(x=700, y=200)
 
-        ttk.Button(frame, text="      Browse     ", command=self.browse_output_image, style='Custom.TButton').grid(
-            row=2, column=2, padx=5, pady=5)
+        tk.Label(self.tab1, text="Output Image:",
+                 font=label_font, bg="#530a0a", fg=label_color).place(x=300, y=250)
 
-        ttk.Label(frame, text="Disk Size (GB):", font=label_font).grid(
-            row=3, column=0, padx=5, pady=5)
-        self.disk_size_entry = ttk.Entry(frame, width=20, font=label_font)
-        self.disk_size_entry.grid(row=3, column=1, padx=5, pady=5)
+        self.output_image_entry = tk.Entry(
+            self.tab1, width=20, font=label_font)
+        self.output_image_entry.place(x=450, y=250)
 
-        self.progress_label = ttk.Label(frame, text="", font=label_font)
-        self.progress_label.grid(row=4, column=0, columnspan=3, pady=10)
+        browse_btn = tk.Button(self.tab1,
+                               text="📂 Browse",
+                               command=self.browse_output_image,
+                               font=button_font,
+                               bg=button_bg,
+                               fg=button_fg,
+                               relief=button_relief,
+                               cursor=button_cursor,
+                               bd=0, width=button_width, height=button_height,
+                               highlightthickness=0)
+        browse_btn.place(x=700, y=250)
+
+        # Disk size
+        tk.Label(self.tab1, text="Disk Size (GB):",
+                 font=label_font, bg="#530a0a", fg=label_color).place(x=300, y=300)
+
+        self.disk_size_entry = tk.Entry(self.tab1, width=20, font=label_font)
+        self.disk_size_entry.place(x=450, y=300)
+
+        # Progress indicators
+        self.progress_label = tk.Label(self.tab1, text="",
+                                       font=label_font, bg="#530a0a", fg=label_color)
+        self.progress_label.place(x=450, y=610)
 
         self.progress_bar = ttk.Progressbar(
-            frame, orient="horizontal", length=400, mode="determinate")
-        self.progress_bar.grid(row=5, column=0, columnspan=3, pady=10)
+            self.tab1, orient="horizontal", length=1148, mode="determinate")
+        self.progress_bar.place(x=0, y=623)
 
-        self.mb_label = ttk.Label(
-            frame, text="MB Copied: 0.00 / 0.00", font=label_font)
-        self.mb_label.grid(row=6, column=0, columnspan=3, pady=5)
+        self.mb_label = tk.Label(self.tab1, text="MB Copied: 0.00 / 0.00",
+                                 font=label_font, bg="#530a0a", fg=label_color)
+        self.mb_label.place(x=470, y=450)
 
-        self.speed_label = ttk.Label(
-            frame, text="Speed: 0.00 MB/sec", font=label_font)
-        self.speed_label.grid(row=7, column=0, columnspan=3, pady=5)
+        self.speed_label = tk.Label(self.tab1, text="Speed: 0.00 MB/sec",
+                                    font=label_font, bg="#530a0a", fg=label_color)
+        self.speed_label.place(x=490, y=480)
 
-        self.time_label = ttk.Label(
-            frame, text="Estimated Time Remaining: --:--:--", font=label_font)
-        self.time_label.grid(row=8, column=0, columnspan=3, pady=5)
+        self.time_label = tk.Label(self.tab1, text="Estimated Time Remaining: --:--:--",
+                                   font=label_font, bg="#530a0a", fg=label_color)
+        self.time_label.place(x=430, y=510)
 
-        ttk.Button(frame, text="Create Disk Image", command=self.start_disk_imaging, style='Custom.TButton').grid(
-            row=9, column=0, columnspan=3, pady=10)
+        # Create Disk Image button
+        create_btn = tk.Button(self.tab1,
+                               text="💾 Create Disk Image",
+                               command=self.start_disk_imaging,
+                               font=button_font,
+                               bg=button_bg,
+                               fg=button_fg, width=button_width, height=button_height,
+
+                               relief=button_relief,
+                               cursor=button_cursor,
+                               bd=0,
+                               highlightthickness=0)
+        create_btn.place(x=480, y=560)
+
+        # Add hover effects
+        for button in (refresh_btn, browse_btn, create_btn):
+            button.bind("<Enter>", lambda e, btn=button: btn.configure(
+                bg="#6b2e85"))  # Darker on hover
+            button.bind("<Leave>", lambda e, btn=button: btn.configure(
+                bg=button_bg))  # Original color when leaving
 
     def setup_chain_of_custody_tab(self):
         """Setup the Chain of Custody tab."""
