@@ -25,3 +25,15 @@
 2025-03-15 12:42:29 | User: abdullah | File/Action: Disk Imaging Failed | Details: Error: cannot access local variable 'progress' where it is not associated with a value
 2025-03-15 12:46:49 | User: abdullah | File/Action: Disk Imaging Started | Disk Image: zzz.img | Details: Device: /dev/disk4, Output: /Users/abdullah/MOON/zzz.img
 2025-03-15 12:52:16 | User: abdullah | File/Action: Disk Imaging Started | Disk Image: xxxx.img | Details: Device: /dev/disk4, Output: /Users/abdullah/MOON/xxxx.img
+2025-03-15 13:00:05 | User: abdullah | File/Action: Disk Imaging Started | Disk Image: zzzz.img | Details: Device: /dev/disk4, Output: /Users/abdullah/MOON/zzzz.img
+2025-03-15 13:01:07 | User: abdullah | File/Action: Disk Imaging Started | Disk Image: xxxxxx.img | Details: Device: /dev/disk4, Output: /Users/abdullah/MOON/xxxxxx.img
+2025-03-15 13:09:22 | User: abdullah | File/Action: Disk Imaging Started | Disk Image: vv.img | Details: Device: /dev/disk4, Output: /Users/abdullah/MOON/vv.img
+2025-03-15 13:10:40 | User: abdullah | File/Action: Disk Imaging Started | Disk Image: xc.img | Details: Device: /dev/disk4, Output: /Users/abdullah/MOON/xc.img
+2025-03-15 13:11:11 | User: abdullah | File/Action: Disk Imaging Started | Disk Image: vvv.img | Details: Device: /dev/disk4, Output: /Users/abdullah/MOON/vvv.img
+2025-03-15 13:13:07 | User: abdullah | File/Action: Disk Imaging Started | Disk Image: xcxc.img | Details: Device: /dev/disk4, Output: /Users/abdullah/MOON/xcxc.img
+2025-03-15 13:14:31 | User: abdullah | File/Action: Disk Imaging Started | Disk Image: cc.img | Details: Device: /dev/disk4, Output: /Users/abdullah/MOON/cc.img
+2025-03-15 13:15:01 | User: abdullah | File/Action: Disk Imaging Started | Disk Image: zxz.img | Details: Device: /dev/disk4, Output: /Users/abdullah/MOON/zxz.img
+2025-03-15 13:15:34 | User: abdullah | File/Action: Disk Imaging Started | Disk Image: vvv.img | Details: Device: /dev/disk4, Output: /Users/abdullah/MOON/vvv.img
+2025-03-15 13:15:52 | User: abdullah | File/Action: Disk Imaging Started | Disk Image: nnn.img | Details: Device: /dev/disk4, Output: /Users/abdullah/MOON/nnn.img
+2025-03-15 13:16:15 | User: abdullah | File/Action: Disk Imaging Started | Disk Image: bb.img | Details: Device: /dev/disk4, Output: /Users/abdullah/MOON/bb.img
+2025-03-15 13:16:44 | User: abdullah | File/Action: Disk Imaging Started | Disk Image: bb.img | Details: Device: /dev/disk4, Output: /Users/abdullah/MOON/bb.img

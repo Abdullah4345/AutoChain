@@ -755,6 +755,7 @@ def create_disk_image(disk_device, output_image, disk_size_gb, progress_callback
         log_chain_of_custody("Disk Imaging Failed", f"Error: {str(e)}")
         progress_callback(f"Disk imaging failed: {str(e)}")
 
+
 def calculate_hash(file_path, algorithm=HASH_ALGORITHM):
     """Calculate the cryptographic hash of a file."""
     hash_func = hashlib.new(algorithm)
@@ -1009,13 +1010,13 @@ class ForensicApp(tk.Tk):
 
         # Drive selection
         tk.Label(self.tab1, text="Select Flash Drive:",
-                 font=label_font, width=button_width, height=button_height, bg="#530a0a", fg=label_color).place(x=300, y=200)
+                 font=label_font, width=button_width, height=button_height, bg="#530a0a", fg=label_color).place(x=330, y=300)
 
         self.drive_var = tk.StringVar()
         self.drive_dropdown = ttk.Combobox(
             self.tab1, textvariable=self.drive_var,
-            state="readonly", font=label_font, width=20)
-        self.drive_dropdown.place(x=450, y=200)
+            state="readonly", font=label_font, width=15)
+        self.drive_dropdown.place(x=500, y=300)
         self.refresh_drives()
 
         # Refresh Drives button
@@ -1030,14 +1031,14 @@ class ForensicApp(tk.Tk):
                                 cursor=button_cursor,
                                 bd=0, width=2, height=2,
                                 highlightthickness=0)
-        refresh_btn.place(x=700, y=200)
+        refresh_btn.place(x=700, y=300)
 
         tk.Label(self.tab1, text="Output Image:",
-                 font=label_font, bg="#530a0a", fg=label_color).place(x=300, y=250)
+                 font=label_font, bg="#530a0a", fg=label_color).place(x=330, y=350)
 
         self.output_image_entry = tk.Entry(
             self.tab1, width=20, font=label_font)
-        self.output_image_entry.place(x=450, y=250)
+        self.output_image_entry.place(x=480, y=350)
 
         browse_btn = tk.Button(self.tab1,
                                text="📂 Browse",
@@ -1049,19 +1050,19 @@ class ForensicApp(tk.Tk):
                                cursor=button_cursor,
                                bd=0, width=button_width, height=button_height,
                                highlightthickness=0)
-        browse_btn.place(x=700, y=250)
+        browse_btn.place(x=700, y=350)
 
         # Disk size
         tk.Label(self.tab1, text="Disk Size (GB):",
-                 font=label_font, bg="#530a0a", fg=label_color).place(x=300, y=300)
+                 font=label_font, bg="#530a0a", fg=label_color).place(x=330, y=400)
 
         self.disk_size_entry = tk.Entry(self.tab1, width=20, font=label_font)
-        self.disk_size_entry.place(x=450, y=300)
+        self.disk_size_entry.place(x=480, y=400)
 
         # Progress indicators
         self.progress_label = tk.Label(self.tab1, text="",
                                        font=label_font, bg="#530a0a", fg=label_color)
-        self.progress_label.place(x=450, y=610)
+        self.progress_label.place(x=510, y=580)
 
         self.progress_bar = ttk.Progressbar(
             self.tab1, orient="horizontal", length=1148, mode="determinate")
@@ -1069,15 +1070,15 @@ class ForensicApp(tk.Tk):
 
         self.mb_label = tk.Label(self.tab1, text="MB Copied: 0.00 / 0.00",
                                  font=label_font, bg="#530a0a", fg=label_color)
-        self.mb_label.place(x=470, y=450)
+        self.mb_label.place(x=460, y=450)
 
         self.speed_label = tk.Label(self.tab1, text="Speed: 0.00 MB/sec",
                                     font=label_font, bg="#530a0a", fg=label_color)
-        self.speed_label.place(x=490, y=480)
+        self.speed_label.place(x=500, y=470)
 
         self.time_label = tk.Label(self.tab1, text="Estimated Time Remaining: --:--:--",
                                    font=label_font, bg="#530a0a", fg=label_color)
-        self.time_label.place(x=430, y=510)
+        self.time_label.place(x=450, y=490)
 
         # Create Disk Image button
         create_btn = tk.Button(self.tab1,
@@ -1091,7 +1092,7 @@ class ForensicApp(tk.Tk):
                                cursor=button_cursor,
                                bd=0,
                                highlightthickness=0)
-        create_btn.place(x=480, y=560)
+        create_btn.place(x=480, y=530)
 
         # Add hover effects
         for button in (refresh_btn, browse_btn, create_btn):
