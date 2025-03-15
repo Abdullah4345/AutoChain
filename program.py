@@ -1007,16 +1007,197 @@ class ForensicApp(tk.Tk):
         button_cursor = "hand2"
         button_width = 20
         button_height = 2
+        label1 = tk.Label(self.tab1, text="<̷ ",
+                          fg="#cb1717", bg="#530a0a", font=("Arial", 14))
+        label1.place(x=70, y=50)
+
+        label2 = tk.Label(self.tab1, text=">̷",
+                          fg="#cb1717", bg="#530a0a", font=("Arial", 14))
+        label2.place(x=300, y=150)
+
+        label3 = tk.Label(self.tab1, text="*̷",
+                          fg="#cb1717", bg="#530a0a", font=("Arial", 14))
+        label3.place(x=600, y=250)
+
+        # Additional labels in random spaces, avoiding the middle lane (around x=400, y=300)
+        label4 = tk.Label(self.tab1, text="&̷",
+                          fg="#cb1717", bg="#530a0a", font=("Arial", 17))
+        label4.place(x=100, y=150)
+
+        label5 = tk.Label(self.tab1, text="(̶",
+                          fg="#cb1717", bg="#530a0a", font=("Arial", 19))
+        label5.place(x=650, y=100)
+
+        label6 = tk.Label(self.tab1, text="^̵͉̦̓̓",
+                          fg="#cb1717", bg="#530a0a", font=("Arial", 21))
+        label6.place(x=200, y=500)
+
+        label7 = tk.Label(self.tab1, text="Ֆ",
+                          fg="#cb1717", bg="#530a0a", font=("Arial", 16))
+        label7.place(x=550, y=50)
+
+        label8 = tk.Label(self.tab1, text="%͛͘",
+                          fg="#cb1717", bg="#530a0a", font=("Arial", 14))
+        label8.place(x=700, y=400)
+
+        label9 = tk.Label(self.tab1, text="@̈́̒͠",
+                          fg="#cb1717", bg="#530a0a", font=("Arial", 15))
+        label9.place(x=50, y=450)
+
+        label10 = tk.Label(self.tab1, text="*̳",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 13))
+        label10.place(x=150, y=300)
+
+        label11 = tk.Label(self.tab1, text="¿",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 17))
+        label11.place(x=600, y=400)
+
+        label12 = tk.Label(self.tab1, text="x",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 16))
+        label12.place(x=50, y=100)
+
+        label13 = tk.Label(self.tab1, text="x",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 21))
+        label13.place(x=700, y=250)
+
+        label16 = tk.Label(self.tab1, text="¿",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 14))
+        label16.place(x=100, y=500)
+
+        label17 = tk.Label(self.tab1, text="?",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 13))
+        label17.place(x=650, y=350)
+
+        label19 = tk.Label(self.tab1, text="/",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 11))
+        label19.place(x=300, y=400)
+
+        label20 = tk.Label(self.tab1, text="!",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 12))
+        label20.place(x=850, y=550)
+
+        label21 = tk.Label(self.tab1, text="*",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 13))
+        label21.place(x=900, y=250)
+
+        label22 = tk.Label(self.tab1, text="+",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 15))
+        label22.place(x=800, y=150)
+
+        label23 = tk.Label(self.tab1, text="&",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 16))
+        label23.place(x=950, y=300)
+
+        label24 = tk.Label(self.tab1, text="@",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 17))
+        label24.place(x=850, y=200)
+
+        label25 = tk.Label(self.tab1, text="#",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 18))
+        label25.place(x=900, y=500)
+
+        label26 = tk.Label(self.tab1, text="$",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 13))
+        label26.place(x=850, y=100)
+
+        label27 = tk.Label(self.tab1, text="̈́̒͠",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 14))
+        label27.place(x=720, y=250)
+
+        label28 = tk.Label(self.tab1, text="*",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 19))
+        label28.place(x=1030, y=180)
+
+        label29 = tk.Label(self.tab1, text="!",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 12))
+        label29.place(x=880, y=450)
+
+        label30 = tk.Label(self.tab1, text="?",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 16))
+        label30.place(x=920, y=380)
+
+        label31 = tk.Label(self.tab1, text="$",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 20))
+        label31.place(x=1100, y=320)
+
+        label32 = tk.Label(self.tab1, text="~",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 15))
+        label32.place(x=780, y=220)
+
+        label33 = tk.Label(self.tab1, text="*",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 18))
+        label33.place(x=960, y=270)
+
+        label34 = tk.Label(self.tab1, text="¿",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 14))
+        label34.place(x=830, y=160)
+
+        label35 = tk.Label(self.tab1, text="̈́̒͠",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 17))
+        label35.place(x=1010, y=400)
+
+        label36 = tk.Label(self.tab1, text="*",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 12))
+        label36.place(x=700, y=350)
+
+        label37 = tk.Label(self.tab1, text="$",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 14))
+        label37.place(x=720, y=600)
+
+        label38 = tk.Label(self.tab1, text="*̳",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 16))
+        label38.place(x=1030, y=650)
+
+        label39 = tk.Label(self.tab1, text="]",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 18))
+        label39.place(x=880, y=700)
+
+        label40 = tk.Label(self.tab1, text="[",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 12))
+        label40.place(x=920, y=750)
+
+        label41 = tk.Label(self.tab1, text="¿",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 20))
+        label41.place(x=1100, y=620)
+
+        label42 = tk.Label(self.tab1, text="*̳",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 15))
+        label42.place(x=780, y=670)
+
+        label43 = tk.Label(self.tab1, text="$",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 18))
+        label43.place(x=960, y=720)
+
+        label44 = tk.Label(self.tab1, text=":",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 14))
+        label44.place(x=830, y=770)
+
+        label45 = tk.Label(self.tab1, text="¿",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 17))
+        label45.place(x=1010, y=780)
+
+        label46 = tk.Label(self.tab1, text="$",
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 12))
+        label46.place(x=700, y=790)
+
+        welcome_label = tk.Label(
+            self.tab1,
+            text='AutoChain',
+            fg="#cb1717",
+            bg="#530a0a",
+            font=("Courier", 90, "bold")
+        )
+        welcome_label.place(x=330, y=50)  # Adjust the position as needed
 
         # Drive selection
-        tk.Label(self.tab1, text="Select Flash Drive:",
+        tk.Label(self.tab1, text="Select Drive:",
                  font=label_font, width=button_width, height=button_height, bg="#530a0a", fg=label_color).place(x=330, y=300)
 
         self.drive_var = tk.StringVar()
         self.drive_dropdown = ttk.Combobox(
             self.tab1, textvariable=self.drive_var,
-            state="readonly", font=label_font, width=15)
-        self.drive_dropdown.place(x=500, y=300)
+            state="readonly", font=label_font, width=18)
+        self.drive_dropdown.place(x=480, y=300)
         self.refresh_drives()
 
         # Refresh Drives button
@@ -1068,17 +1249,13 @@ class ForensicApp(tk.Tk):
             self.tab1, orient="horizontal", length=1148, mode="determinate")
         self.progress_bar.place(x=0, y=623)
 
+        # Create labels but don't place them yet
         self.mb_label = tk.Label(self.tab1, text="MB Copied: 0.00 / 0.00",
                                  font=label_font, bg="#530a0a", fg=label_color)
-        self.mb_label.place(x=460, y=450)
-
         self.speed_label = tk.Label(self.tab1, text="Speed: 0.00 MB/sec",
                                     font=label_font, bg="#530a0a", fg=label_color)
-        self.speed_label.place(x=500, y=470)
-
         self.time_label = tk.Label(self.tab1, text="Estimated Time Remaining: --:--:--",
                                    font=label_font, bg="#530a0a", fg=label_color)
-        self.time_label.place(x=450, y=490)
 
         # Create Disk Image button
         create_btn = tk.Button(self.tab1,
@@ -1086,8 +1263,9 @@ class ForensicApp(tk.Tk):
                                command=self.start_disk_imaging,
                                font=button_font,
                                bg=button_bg,
-                               fg=button_fg, width=button_width, height=button_height,
-
+                               fg=button_fg,
+                               width=button_width,
+                               height=button_height,
                                relief=button_relief,
                                cursor=button_cursor,
                                bd=0,
@@ -1100,6 +1278,42 @@ class ForensicApp(tk.Tk):
                 bg="#6b2e85"))  # Darker on hover
             button.bind("<Leave>", lambda e, btn=button: btn.configure(
                 bg=button_bg))  # Original color when leaving
+
+    def start_disk_imaging(self):
+        """Start the disk imaging process in a background thread."""
+        disk_device = self.drive_var.get()
+        output_image = self.output_image_entry.get()
+        disk_size_gb = self.disk_size_entry.get()
+
+        if not disk_device or not output_image or not disk_size_gb:
+            messagebox.showerror(
+                "Error", "Please select a flash drive, provide an output image path, and enter the disk size.")
+            return
+
+        try:
+            disk_size_gb = float(disk_size_gb)
+        except ValueError:
+            messagebox.showerror("Error", "Disk size must be a valid number.")
+            return
+
+        # Place the labels only when starting the imaging process
+        self.mb_label.place(x=460, y=450)
+        self.speed_label.place(x=500, y=470)
+        self.time_label.place(x=450, y=490)
+
+        self.progress_bar["value"] = 0
+        self.progress_label.config(text="Starting disk imaging...")
+        self.mb_label.config(text="MB Copied: 0.00 / 0.00")
+        self.speed_label.config(text="Speed: 0.00 MB/sec")
+        self.time_label.config(text="Estimated Time Remaining: --:--:--")
+
+        imaging_thread = threading.Thread(
+            target=create_disk_image,
+            args=(disk_device, output_image, disk_size_gb, self.update_progress,
+                  self.progress_bar, self.mb_label, self.speed_label, self.time_label),
+            daemon=True
+        )
+        imaging_thread.start()
 
     def setup_chain_of_custody_tab(self):
         """Setup the Chain of Custody tab."""
@@ -1152,37 +1366,6 @@ class ForensicApp(tk.Tk):
             file_path = os.path.splitext(file_path)[0] + ".img"
             self.output_image_entry.delete(0, tk.END)
             self.output_image_entry.insert(0, file_path)
-
-    def start_disk_imaging(self):
-        """Start the disk imaging process in a background thread."""
-        disk_device = self.drive_var.get()
-        output_image = self.output_image_entry.get()
-        disk_size_gb = self.disk_size_entry.get()
-
-        if not disk_device or not output_image or not disk_size_gb:
-            messagebox.showerror(
-                "Error", "Please select a flash drive, provide an output image path, and enter the disk size.")
-            return
-
-        try:
-            disk_size_gb = float(disk_size_gb)
-        except ValueError:
-            messagebox.showerror("Error", "Disk size must be a valid number.")
-            return
-
-        self.progress_bar["value"] = 0
-        self.progress_label.config(text="Starting disk imaging...")
-        self.mb_label.config(text="MB Copied: 0.00 / 0.00")
-        self.speed_label.config(text="Speed: 0.00 MB/sec")
-        self.time_label.config(text="Estimated Time Remaining: --:--:--")
-
-        imaging_thread = threading.Thread(
-            target=create_disk_image,
-            args=(disk_device, output_image, disk_size_gb, self.update_progress,
-                  self.progress_bar, self.mb_label, self.speed_label, self.time_label),
-            daemon=True
-        )
-        imaging_thread.start()
 
     def update_progress(self, message):
         """Update the progress label."""
