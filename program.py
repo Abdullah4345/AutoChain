@@ -1222,14 +1222,14 @@ class ForensicApp(tk.Tk):
         self.output_image_entry.place(x=480, y=350)
 
         browse_btn = tk.Button(self.tab1,
-                               text="📂 Browse",
+                               text="📂",
                                command=self.browse_output_image,
                                font=button_font,
                                bg=button_bg,
                                fg=button_fg,
                                relief=button_relief,
                                cursor=button_cursor,
-                               bd=0, width=button_width, height=button_height,
+                               bd=0, width=2, height=2,
                                highlightthickness=0)
         browse_btn.place(x=700, y=350)
 
