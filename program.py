@@ -940,175 +940,175 @@ class ForensicApp(tk.Tk):
         button_cursor = "hand2"
         button_width = 20
         button_height = 2
-        label1 = tk.Label(self.tab1, text="?",
+        label1 = tk.Label(self.tab1, text="ジ",
                           fg="#cb1717", bg="#530a0a", font=("Arial", 14))
         label1.place(x=70, y=50)
 
-        label2 = tk.Label(self.tab1, text="?",
+        label2 = tk.Label(self.tab1, text="ン",
                           fg="#cb1717", bg="#530a0a", font=("Arial", 14))
         label2.place(x=300, y=150)
 
-        label3 = tk.Label(self.tab1, text="*̷",
+        label3 = tk.Label(self.tab1, text="ク",
                           fg="#cb1717", bg="#530a0a", font=("Arial", 14))
         label3.place(x=600, y=250)
 
-        label4 = tk.Label(self.tab1, text="&̷",
+        label4 = tk.Label(self.tab1, text="ス",
                           fg="#cb1717", bg="#530a0a", font=("Arial", 17))
         label4.place(x=100, y=150)
 
-        label5 = tk.Label(self.tab1, text="(̶",
+        label5 = tk.Label(self.tab1, text="ジ",
                           fg="#cb1717", bg="#530a0a", font=("Arial", 19))
         label5.place(x=650, y=100)
 
-        label6 = tk.Label(self.tab1, text="^̵͉̦̓̓",
+        label6 = tk.Label(self.tab1, text="ン",
                           fg="#cb1717", bg="#530a0a", font=("Arial", 21))
         label6.place(x=200, y=500)
 
-        label7 = tk.Label(self.tab1, text="Ֆ",
+        label7 = tk.Label(self.tab1, text="ク",
                           fg="#cb1717", bg="#530a0a", font=("Arial", 16))
         label7.place(x=550, y=50)
 
-        label8 = tk.Label(self.tab1, text="%͛͘",
+        label8 = tk.Label(self.tab1, text="ス",
                           fg="#cb1717", bg="#530a0a", font=("Arial", 14))
         label8.place(x=700, y=400)
 
-        label9 = tk.Label(self.tab1, text="@̈́̒͠",
+        label9 = tk.Label(self.tab1, text="ク",
                           fg="#cb1717", bg="#530a0a", font=("Arial", 15))
         label9.place(x=50, y=450)
 
-        label10 = tk.Label(self.tab1, text="*̳",
+        label10 = tk.Label(self.tab1, text="ス",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 13))
         label10.place(x=150, y=300)
 
-        label11 = tk.Label(self.tab1, text="¿",
+        label11 = tk.Label(self.tab1, text="ク",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 17))
         label11.place(x=600, y=400)
 
-        label12 = tk.Label(self.tab1, text="x",
+        label12 = tk.Label(self.tab1, text="ク",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 14))
         label12.place(x=50, y=100)
 
-        label13 = tk.Label(self.tab1, text="x",
+        label13 = tk.Label(self.tab1, text="ス",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 21))
         label13.place(x=700, y=250)
 
-        label16 = tk.Label(self.tab1, text="¿",
+        label16 = tk.Label(self.tab1, text="ン",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 14))
         label16.place(x=100, y=500)
 
-        label17 = tk.Label(self.tab1, text="?",
+        label17 = tk.Label(self.tab1, text="ス",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 13))
         label17.place(x=650, y=350)
 
-        label19 = tk.Label(self.tab1, text="/",
+        label19 = tk.Label(self.tab1, text="ク",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 11))
         label19.place(x=300, y=400)
 
-        label20 = tk.Label(self.tab1, text="!",
+        label20 = tk.Label(self.tab1, text="ス",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 12))
         label20.place(x=850, y=550)
 
-        label21 = tk.Label(self.tab1, text="*",
+        label21 = tk.Label(self.tab1, text="ン",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 13))
         label21.place(x=900, y=250)
 
-        label22 = tk.Label(self.tab1, text="+",
+        label22 = tk.Label(self.tab1, text="ク",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 15))
         label22.place(x=800, y=150)
 
-        label23 = tk.Label(self.tab1, text="&",
+        label23 = tk.Label(self.tab1, text="ン",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 16))
         label23.place(x=950, y=300)
 
-        label24 = tk.Label(self.tab1, text="@",
+        label24 = tk.Label(self.tab1, text="ス",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 17))
         label24.place(x=850, y=200)
 
-        label25 = tk.Label(self.tab1, text="#",
+        label25 = tk.Label(self.tab1, text="ク",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 18))
         label25.place(x=900, y=500)
 
-        label26 = tk.Label(self.tab1, text="$",
+        label26 = tk.Label(self.tab1, text="ス",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 13))
         label26.place(x=850, y=100)
 
-        label27 = tk.Label(self.tab1, text="̈́̒͠",
+        label27 = tk.Label(self.tab1, text="ス",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 14))
         label27.place(x=720, y=250)
 
-        label28 = tk.Label(self.tab1, text="*",
+        label28 = tk.Label(self.tab1, text="ク",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 19))
         label28.place(x=1030, y=180)
 
-        label29 = tk.Label(self.tab1, text="!",
+        label29 = tk.Label(self.tab1, text="ン",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 12))
         label29.place(x=880, y=450)
 
-        label30 = tk.Label(self.tab1, text="?",
+        label30 = tk.Label(self.tab1, text="ス",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 16))
         label30.place(x=920, y=380)
 
-        label31 = tk.Label(self.tab1, text="$",
+        label31 = tk.Label(self.tab1, text="ク",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 20))
         label31.place(x=1100, y=320)
 
-        label32 = tk.Label(self.tab1, text="~",
+        label32 = tk.Label(self.tab1, text="ジ",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 15))
         label32.place(x=780, y=220)
 
-        label33 = tk.Label(self.tab1, text="*",
-                           fg="#cb1717", bg="#530a0a", font=("Arial", 18))
-        label33.place(x=960, y=270)
+        # label33 = tk.Label(self.tab1, text="ジ",
+        #                    fg="#cb1717", bg="#530a0a", font=("Arial", 18))
+        # label33.place(x=960, y=270)
 
-        label34 = tk.Label(self.tab1, text="¿",
-                           fg="#cb1717", bg="#530a0a", font=("Arial", 14))
-        label34.place(x=830, y=160)
+        # label34 = tk.Label(self.tab1, text="ス",
+        #                    fg="#cb1717", bg="#530a0a", font=("Arial", 14))
+        # label34.place(x=830, y=160)
 
-        label35 = tk.Label(self.tab1, text="̈́̒͠",
-                           fg="#cb1717", bg="#530a0a", font=("Arial", 17))
-        label35.place(x=1010, y=400)
+        # label35 = tk.Label(self.tab1, text="ク",
+        #                    fg="#cb1717", bg="#530a0a", font=("Arial", 17))
+        # label35.place(x=1010, y=400)
 
-        label36 = tk.Label(self.tab1, text="*",
+        label36 = tk.Label(self.tab1, text="ス",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 12))
         label36.place(x=700, y=350)
 
-        label37 = tk.Label(self.tab1, text="$",
+        label37 = tk.Label(self.tab1, text="ジ",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 14))
         label37.place(x=720, y=600)
 
-        label38 = tk.Label(self.tab1, text="*̳",
-                           fg="#cb1717", bg="#530a0a", font=("Arial", 16))
-        label38.place(x=1030, y=650)
+        # label38 = tk.Label(self.tab1, text="ク",
+        #                    fg="#cb1717", bg="#530a0a", font=("Arial", 16))
+        # label38.place(x=1030, y=650)
 
-        label39 = tk.Label(self.tab1, text="]",
-                           fg="#cb1717", bg="#530a0a", font=("Arial", 18))
-        label39.place(x=880, y=700)
+        # label39 = tk.Label(self.tab1, text="ス",
+        #                    fg="#cb1717", bg="#530a0a", font=("Arial", 18))
+        # label39.place(x=880, y=700)
 
-        label40 = tk.Label(self.tab1, text="[",
+        label40 = tk.Label(self.tab1, text="ジ",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 12))
         label40.place(x=920, y=750)
 
-        label41 = tk.Label(self.tab1, text="¿",
+        label41 = tk.Label(self.tab1, text="ス",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 20))
         label41.place(x=1100, y=620)
 
-        label42 = tk.Label(self.tab1, text="*̳",
+        label42 = tk.Label(self.tab1, text="ク",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 15))
         label42.place(x=780, y=670)
 
-        label43 = tk.Label(self.tab1, text="$",
+        label43 = tk.Label(self.tab1, text="ジ",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 18))
         label43.place(x=960, y=720)
 
-        label44 = tk.Label(self.tab1, text=":",
+        label44 = tk.Label(self.tab1, text="ス",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 14))
         label44.place(x=830, y=770)
 
-        label45 = tk.Label(self.tab1, text="¿",
+        label45 = tk.Label(self.tab1, text="ク",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 17))
         label45.place(x=1010, y=780)
 
-        label46 = tk.Label(self.tab1, text="$",
+        label46 = tk.Label(self.tab1, text="ス",
                            fg="#cb1717", bg="#530a0a", font=("Arial", 12))
         label46.place(x=700, y=790)
 
@@ -1363,8 +1363,8 @@ class ForensicApp(tk.Tk):
 
     def add_decorative_elements(self, parent):
         """Add decorative symbols to the integrity verification tab."""
-        symbols = ["?", "*̷", "&̷", "(̶", "^̵͉̦̓̓", "Ֆ",
-                   "%͛͘", "@̈́̒͠", "*̳", "¿", "x", "$", "!", "+", "&"]
+        symbols = ["ス", "ク", "ク", "ス", "ジ", "ン",
+                   "ス", "ス", "ジ", "ン", "ジ", "ク", "ス", "ン", "ジ"]
         positions = [
             (70, 50), (120, 150), (600, 250), (100, 150), (650, 100),
             (200, 500), (550, 70), (700, 400), (50, 450), (150, 300),
