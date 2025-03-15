@@ -25,7 +25,6 @@ HASH_ALGORITHM = "sha256"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
-# Constants
 OUTPUT_DIR = "forensic_evidence"
 EVIDENCE_LOG = os.path.join(OUTPUT_DIR, "chain_of_custody.log")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -194,7 +193,7 @@ class ChainOfCustodyTab(ttk.Frame):
 
         self.title_bg_image = Image.open("Background.png")
         self.title_bg_image = self.title_bg_image.resize(
-            (1200, 290))  # Resize to fit the title area
+            (1200, 290))
         self.title_bg_photo = ImageTk.PhotoImage(self.title_bg_image)
 
         frame = ttk.LabelFrame(self, padding=(20, 10))
@@ -203,9 +202,9 @@ class ChainOfCustodyTab(ttk.Frame):
 
         title_label = tk.Label(self, image=self.title_bg_photo, text="",
                                compound="center", font=("Arial", 14, "bold"),
-                               fg="white", bd=0, relief="flat")  # White text over image
+                               fg="white", bd=0, relief="flat")
         title_label.place(x=0, y=0)
-        # Form fields
+
         ttk.Label(frame, text="Case ID:").place(x=10, y=0)
         self.case_id_entry = ttk.Entry(frame, width=40)
         self.case_id_entry.place(x=120, y=0)
@@ -249,33 +248,26 @@ class ChainOfCustodyTab(ttk.Frame):
         self.image_size_label = ttk.Label(frame, text="0 MB")
         self.image_size_label.place(x=120, y=210)
 
-        # Define a larger font
-        # You can adjust the font name and size as needed
         large_font = ("Arial", 10)
 
-        # MD5 Hash Label
         ttk.Label(frame, text="MD5 Hash:").place(x=10, y=240)
         self.md5_hash_label = ttk.Label(
             frame, text="00000000000000000000000000000000", font=large_font)
         self.md5_hash_label.place(x=120, y=240)
 
-        # SHA-256 Hash Label
         ttk.Label(frame, text="SHA-256 Hash:").place(x=10, y=270)
         self.sha256_hash_label = ttk.Label(
             frame, text="0000000000000000000000000000000000000000000000000000000000000000", font=large_font)
         self.sha256_hash_label.place(x=120, y=270)
 
-        # Additional Feedback Input Field
         ttk.Label(frame, text="Additional Feedback:").place(x=600, y=-10)
         self.additional_feedback = tk.Text(
             frame, width=74, height=23, wrap=tk.WORD)
         self.additional_feedback.place(x=590, y=10)
 
-        # Submit button
         ttk.Button(frame, text="                Submit              ",
                    command=self.submit_form).place(x=120, y=290)
 
-        # Export to PDF button
         ttk.Button(frame, text="          Export to PDF        ",
                    command=self.export_to_pdf).place(x=310, y=290)
 
@@ -284,18 +276,16 @@ class ChainOfCustodyTab(ttk.Frame):
         selected_country = self.country_var.get()
         if (selected_country in STATES):
             self.state_dropdown["values"] = STATES[selected_country]
-            self.state_dropdown.current(0)  # Select the first state by default
-            self.update_zip_codes()  # Update ZIP codes for the first state
+            self.state_dropdown.current(0)
+            self.update_zip_codes()
 
     def update_zip_codes(self, event=None):
         """Update the ZIP codes dropdown based on the selected state."""
         selected_state = self.state_var.get()
         if selected_state in ZIP_CODES:
             self.zip_dropdown["values"] = ZIP_CODES[selected_state]
-            # Select the first ZIP code by default
-            self.zip_dropdown.current()
 
-    # Ensure the zip_dropdown is correctly bound to the event
+            self.zip_dropdown.current()
 
     def browse_image_file(self):
         """Open a file dialog to select an image file and update the entry field."""
@@ -303,26 +293,24 @@ class ChainOfCustodyTab(ttk.Frame):
             title="Select an Image File",
             filetypes=[("Image Files", "*.img *.jpg *.png *.bmp *.tiff")]
         )
-        if file_path:  # If a file was selected
-            # Temporarily enable the entry to update it
+        if file_path:
+
             self.image_file_entry.config(state="normal")
-            self.image_file_entry.delete(0, tk.END)  # Clear any existing text
-            # Insert the selected file path
+            self.image_file_entry.delete(0, tk.END)
+
             self.image_file_entry.insert(0, file_path)
             self.image_file_entry.config(
-                state="readonly")  # Set it back to readonly
+                state="readonly")
 
-            # Update the image size label
             self.update_image_size(file_path)
 
-            # Calculate and display the MD5 and SHA-256 hashes
             self.calculate_hashes(file_path)
 
     def update_image_size(self, file_path):
         """Update the image size label with the size of the selected file."""
         try:
-            file_size = os.path.getsize(file_path)  # Get file size in bytes
-            file_size_mb = file_size / (1024 * 1024)  # Convert to MB
+            file_size = os.path.getsize(file_path)
+            file_size_mb = file_size / (1024 * 1024)
             self.image_size_label.config(text=f"{file_size_mb:.2f} MB")
         except Exception as e:
             self.image_size_label.config(text="0 MB")
@@ -357,21 +345,16 @@ class ChainOfCustodyTab(ttk.Frame):
         additional_feedback = self.additional_feedback.get(
             "1.0", tk.END).strip()
 
-        # Validate zip code (must be 5 digits)
-
-        # Check if all required fields are filled
         if not all([case_id, name, country, state, zip_code, signature, image_file, md5_hash, sha256_hash]):
             messagebox.showerror(
                 "Error", "Please fill out all fields and select an image file.")
             return
 
-        # Check if the case ID already exists in case_log.csv
         if self.case_id_exists(case_id):
             messagebox.showerror(
                 "Error", f"Case ID {case_id} already exists. Please use a unique Case ID.")
             return
 
-        # Log the chain of custody
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         log_entry = (
             f"Date & Time: {timestamp} | "
@@ -390,7 +373,6 @@ class ChainOfCustodyTab(ttk.Frame):
         with open(EVIDENCE_LOG, "a") as log_file:
             log_file.write(log_entry)
 
-        # Log case ID and hashes to case_log.csv
         with open("case_log.csv", "a", newline="") as csv_file:
             writer = csv.writer(csv_file)
             writer.writerow([case_id, md5_hash, sha256_hash])
@@ -400,28 +382,27 @@ class ChainOfCustodyTab(ttk.Frame):
     def case_id_exists(self, case_id):
         """Check if the case ID already exists in case_log.csv."""
         if not os.path.exists("case_log.csv"):
-            return False  # File doesn't exist, so case ID is unique
+            return False
 
         with open("case_log.csv", "r") as csv_file:
             reader = csv.reader(csv_file)
             for row in reader:
-                # Check if the first column matches the case ID
+
                 if row and row[0] == case_id:
                     return True
         return False
 
     def export_to_pdf(self):
         """Exports the chain of custody log to a professional-looking PDF and clears the log."""
-        # Ask the user for the PDF file path
+
         pdf_filename = filedialog.asksaveasfilename(
             defaultextension=".pdf",
             filetypes=[("PDF Files", "*.pdf")],
             title="Save PDF Report"
         )
         if not pdf_filename:
-            return  # User cancelled the save dialog
+            return
 
-        # Read the log file
         if not os.path.exists(EVIDENCE_LOG):
             messagebox.showerror("Error", "No log entries found.")
             return
@@ -434,67 +415,59 @@ class ChainOfCustodyTab(ttk.Frame):
                 "Error", f"Failed to read the log file: {str(e)}")
             return
 
-        # Clear the log file before exporting
         try:
             with open(EVIDENCE_LOG, "w") as log_file:
                 log_file.write("")
-            print("Log file cleared successfully.")  # Debugging statement
+            print("Log file cleared successfully.")
         except Exception as e:
             messagebox.showerror(
                 "Error", f"Failed to clear the log file: {str(e)}")
             return
 
-        # Create the PDF
         pdf = FPDF()
         pdf.set_auto_page_break(auto=True, margin=15)
         pdf.add_page()
 
-        # Set margins for the entire PDF
         pdf.set_left_margin(20)
         pdf.set_right_margin(20)
 
-        # Title Section (Centered with Green Background)
         pdf.set_font("Arial", style="B", size=24)
-        pdf.set_fill_color(128, 0, 0)  # Green background
-        pdf.set_text_color(255, 255, 255)  # White text
+        pdf.set_fill_color(128, 0, 0)
+        pdf.set_text_color(255, 255, 255)
         pdf.cell(0, 20, "Chain of Custody Report",
                  ln=True, align="C", fill=True)
 
-        # Case ID (Centered with Green Background)
         if log_entries:
             try:
                 case_id = log_entries[0].split(" | ")[1].split(
-                    ": ")[1]  # Extract Case ID from the first log entry
+                    ": ")[1]
             except IndexError:
-                case_id = "N/A"  # Handle missing Case ID
+                case_id = "N/A"
             pdf.set_font("Arial", style="B", size=16)
             pdf.cell(0, 10, f"Case ID: {case_id}",
                      ln=True, align="C", fill=True)
 
-        # Generated On (Centered with Green Background)
         pdf.set_font("Arial", size=12)
         pdf.cell(
             0, 10, f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", ln=True, align="C", fill=True)
-        pdf.ln(5)  # Add some space after the title section
+        pdf.ln(5)
 
-        # Agent Information Section
         pdf.set_font("Arial", style="B", size=14)
-        pdf.set_text_color(0, 0, 0)  # Black text
+        pdf.set_text_color(0, 0, 0)
         pdf.cell(0, 10, "Agent Information", ln=True, align="L")
         pdf.ln(5)
 
-        # Table for Agent Information (Stretched to PDF width with margins)
         pdf.set_font("Arial", style="B", size=12)
-        pdf.set_fill_color(0, 128, 0)  # Green color for headers
-        pdf.set_text_color(255, 255, 255)  # White text for headers
-        col_widths = [40, 40, 35, 30, 25]  # Equal column widths
+        pdf.set_fill_color(0, 128, 0)
+        pdf.set_text_color(255, 255, 255)
+        col_widths = [40, 40, 35, 30, 25]
         headers = ["Date & Time", "Name", "Country", "State", "Zip Code"]
         for i, header in enumerate(headers):
             pdf.cell(col_widths[i], 10, header, border=1, align="C", fill=True)
         pdf.ln()
 
         pdf.set_font("Arial", size=10)
-        pdf.set_text_color(0, 0, 0)  # Black text for data
+        pdf.set_text_color(0, 0, 0)
         for i, line in enumerate(log_entries):
             row_color = (240, 240, 240) if i % 2 == 0 else (255, 255, 255)
             pdf.set_fill_color(*row_color)
@@ -505,14 +478,12 @@ class ChainOfCustodyTab(ttk.Frame):
                     key, value = column.split(": ", 1)
                     data[key.strip()] = value.strip()
 
-            # Extract values from the log entry
             date_time = data.get("Date & Time", "N/A")
             name = data.get("Name", "N/A")
             country = data.get("Country", "N/A")
             state = data.get("State", "N/A")
             zip_code = data.get("Zip Code", "N/A")
 
-            # Add values to the table
             pdf.cell(col_widths[0], 10, date_time,
                      border=1, align="C", fill=True)
             pdf.cell(col_widths[1], 10, name, border=1, align="C", fill=True)
@@ -525,24 +496,22 @@ class ChainOfCustodyTab(ttk.Frame):
 
         pdf.ln(10)
 
-        # Image Information Section
         pdf.set_font("Arial", style="B", size=14)
-        pdf.set_text_color(0, 0, 0)  # Black text
+        pdf.set_text_color(0, 0, 0)
         pdf.cell(0, 10, "Image Information", ln=True, align="L")
         pdf.ln(5)
 
-        # Table for Image Information (Stretched to PDF width with margins)
         pdf.set_font("Arial", style="B", size=12)
-        pdf.set_fill_color(0, 128, 0)  # Green color for headers
-        pdf.set_text_color(255, 255, 255)  # White text for headers
-        col_widths = [50, 70, 50]  # Adjusted column widths
+        pdf.set_fill_color(0, 128, 0)
+        pdf.set_text_color(255, 255, 255)
+        col_widths = [50, 70, 50]
         headers = ["Date & Time", "Image File", "Image Size"]
         for i, header in enumerate(headers):
             pdf.cell(col_widths[i], 10, header, border=1, align="C", fill=True)
         pdf.ln()
 
         pdf.set_font("Arial", size=10)
-        pdf.set_text_color(0, 0, 0)  # Black text for data
+        pdf.set_text_color(0, 0, 0)
         for i, line in enumerate(log_entries):
             row_color = (240, 240, 240) if i % 2 == 0 else (255, 255, 255)
             pdf.set_fill_color(*row_color)
@@ -553,12 +522,10 @@ class ChainOfCustodyTab(ttk.Frame):
                     key, value = column.split(": ", 1)
                     data[key.strip()] = value.strip()
 
-            # Extract values from the log entry
             date_time = data.get("Date & Time", "N/A")
             image_file = data.get("Image File", "N/A")
             image_size = data.get("Image Size", "N/A")
 
-            # Add values to the table
             pdf.cell(col_widths[0], 10, date_time,
                      border=1, align="C", fill=True)
             pdf.cell(col_widths[1], 10, image_file,
@@ -569,22 +536,20 @@ class ChainOfCustodyTab(ttk.Frame):
 
         pdf.ln(10)
 
-        # Hash Information Section
         pdf.set_font("Arial", style="B", size=14)
-        pdf.set_text_color(0, 0, 0)  # Black text
+        pdf.set_text_color(0, 0, 0)
         pdf.cell(0, 10, "Hash Information", ln=True, align="L")
         pdf.ln(5)
 
-        # Display MD5 and SHA-256 hashes on top of each other
         pdf.set_font("Arial", style="B", size=12)
-        pdf.set_fill_color(0, 128, 0)  # Green color for headers
-        pdf.set_text_color(255, 255, 255)  # White text for headers
+        pdf.set_fill_color(0, 128, 0)
+        pdf.set_text_color(255, 255, 255)
         pdf.cell(35, 10, "Hash Type", border=1, align="C", fill=True)
         pdf.cell(135, 10, "Hash Value", border=1, align="C", fill=True)
         pdf.ln()
 
         pdf.set_font("Arial", size=10)
-        pdf.set_text_color(0, 0, 0)  # Black text for data
+        pdf.set_text_color(0, 0, 0)
         for i, line in enumerate(log_entries):
             columns = line.strip().split(" | ")
             data = {}
@@ -593,18 +558,15 @@ class ChainOfCustodyTab(ttk.Frame):
                     key, value = column.split(": ", 1)
                     data[key.strip()] = value.strip()
 
-            # Extract values from the log entry
             md5_hash = data.get("MD5", "N/A")
             sha256_hash = data.get("SHA-256", "N/A")
 
-            # MD5 Hash Row
             pdf.set_fill_color(
                 240, 240, 240) if i % 2 == 0 else (255, 255, 255)
             pdf.cell(35, 10, "MD5", border=1, align="C", fill=True)
             pdf.cell(135, 10, md5_hash, border=1, align="L", fill=True)
             pdf.ln()
 
-            # SHA-256 Hash Row
             pdf.set_fill_color(
                 240, 240, 240) if i % 2 == 0 else (255, 255, 255)
             pdf.cell(35, 10, "SHA-256", border=1, align="C", fill=True)
@@ -612,18 +574,17 @@ class ChainOfCustodyTab(ttk.Frame):
             pdf.ln()
 
         pdf.ln(10)
-        # Additional Info Section (Black Background for Header, White Text)
+
         pdf.set_font("Arial", style="B", size=14)
-        pdf.set_fill_color(0, 0, 0)  # Black background for the header
-        pdf.set_text_color(255, 255, 255)  # White text for the header
+        pdf.set_fill_color(0, 0, 0)
+        pdf.set_text_color(255, 255, 255)
         pdf.cell(0, 10, "Additional Info", ln=True, align="L", fill=True)
         pdf.ln(5)
 
-        # Feedback Text (Light Gray Background, Black Text)
         pdf.set_font("Arial", size=9)
-        # Light gray background for the feedback text
+
         pdf.set_fill_color(240, 240, 240)
-        pdf.set_text_color(0, 0, 0)  # Black text for the feedback text
+        pdf.set_text_color(0, 0, 0)
         for line in log_entries:
             columns = line.strip().split(" | ")
             data = {}
@@ -636,10 +597,10 @@ class ChainOfCustodyTab(ttk.Frame):
                 "Additional Feedback", "No additional feedback provided.")
             pdf.multi_cell(0, 10, additional_feedback,
                            border=1, align="L", fill=True)
-        # Signature Section (Moved to the bottom of the page)
+
         pdf.ln(10)
         pdf.set_font("Arial", style="B", size=14)
-        pdf.set_text_color(0, 0, 0)  # Black text
+        pdf.set_text_color(0, 0, 0)
         pdf.cell(0, 10, "Signature", ln=True, align="L")
         pdf.ln(5)
 
@@ -656,7 +617,6 @@ class ChainOfCustodyTab(ttk.Frame):
             pdf.cell(
                 0, 10, f"Mr./Ms. {signature}", ln=True, align="L")
 
-        # Save the PDF
         pdf.output(pdf_filename)
         messagebox.showinfo(
             "Success", f"Chain of custody exported to {pdf_filename}")
@@ -665,16 +625,15 @@ class ChainOfCustodyTab(ttk.Frame):
 def log_chain_of_custody(filename, details=""):
     """Log the creation of a disk image with optional details, ensuring .img filenames are included."""
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    user = getpass.getuser()  # Get the current username
+    user = getpass.getuser()
     log_entry = f"{timestamp} | User: {user} | File/Action: {filename}"
 
-    # Ensure .img file names are recorded in the log
     if filename.endswith(".img"):
-        # Extract just the filename from the full path
+
         img_filename = os.path.basename(filename)
         log_entry += f" | Disk Image: {img_filename}"
     elif "Output: " in details:
-        # Extract the output image filename from the details
+
         output_image = details.split("Output: ")[1].split(",")[0]
         img_filename = os.path.basename(output_image)
         log_entry += f" | Disk Image: {img_filename}"
@@ -699,7 +658,7 @@ def read_chain_of_custody():
 def create_disk_image(disk_device, output_image, disk_size_gb, progress_callback, progress_bar, mb_label, speed_label, time_label):
     """Create a forensic disk image using dd."""
     try:
-        # Log the start of the disk imaging process with the output image filename
+
         log_chain_of_custody("Disk Imaging Started",
                              f"Device: {disk_device}, Output: {output_image}")
         command = ["sudo", "dd", f"if={disk_device}",
@@ -708,10 +667,10 @@ def create_disk_image(disk_device, output_image, disk_size_gb, progress_callback
             command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         start_time = datetime.now()
-        total_size_bytes = disk_size_gb * 1024 * 1024 * 1024  # Convert GB to bytes
-        total_size_mb = disk_size_gb * 1024  # Convert GB to MB
+        total_size_bytes = disk_size_gb * 1024 * 1024 * 1024
+        total_size_mb = disk_size_gb * 1024
 
-        progress = 0  # Initialize progress variable
+        progress = 0
 
         while True:
             output = process.stderr.readline()
@@ -721,7 +680,7 @@ def create_disk_image(disk_device, output_image, disk_size_gb, progress_callback
             match = re.search(r"(\d+) bytes", output)
             if match:
                 copied_bytes = int(match.group(1))
-                copied_mb = copied_bytes / (1024 * 1024)  # Convert bytes to MB
+                copied_mb = copied_bytes / (1024 * 1024)
 
                 progress = (copied_bytes / total_size_bytes) * 100
                 progress_bar["value"] = progress
@@ -747,7 +706,6 @@ def create_disk_image(disk_device, output_image, disk_size_gb, progress_callback
 
             progress_callback(f"Progress: {progress:.2f}%")
 
-        # Log the completion of the disk imaging process with the output image filename
         log_chain_of_custody("Disk Imaging Completed",
                              f"Output: {output_image}")
         progress_callback("Disk imaging completed successfully.")
@@ -767,16 +725,15 @@ def calculate_hash(file_path, algorithm=HASH_ALGORITHM):
 
 def export_to_pdf(self):
     """Exports the chain of custody log to a professional-looking PDF and clears the log."""
-    # Ask the user for the PDF file path
+
     pdf_filename = filedialog.asksaveasfilename(
         defaultextension=".pdf",
         filetypes=[("PDF Files", "*.pdf")],
         title="Save PDF Report"
     )
     if not pdf_filename:
-        return  # User cancelled the save dialog
+        return
 
-    # Read the log file
     if not os.path.exists(EVIDENCE_LOG):
         messagebox.showerror("Error", "No log entries found.")
         return
@@ -788,79 +745,71 @@ def export_to_pdf(self):
         messagebox.showerror("Error", f"Failed to read the log file: {str(e)}")
         return
 
-    # Create the PDF
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
 
-    # Title Section (Centered)
-    pdf.set_font("Arial", style="B", size=24)  # Big font for the title
-    pdf.set_fill_color(0, 128, 0)  # Green background
-    pdf.set_text_color(255, 255, 255)  # White text
+    pdf.set_font("Arial", style="B", size=24)
+    pdf.set_fill_color(0, 128, 0)
+    pdf.set_text_color(255, 255, 255)
     pdf.cell(200, 20, "Chain of Custody Report", ln=True, align="C", fill=True)
 
-    # Case ID (Centered, Medium Font)
     if log_entries:
         case_id = log_entries[0].split(" | ")[1].split(
-            ": ")[1]  # Extract Case ID from the first log entry
-        pdf.set_font("Arial", style="B", size=16)  # Medium font for Case ID
+            ": ")[1]
+        pdf.set_font("Arial", style="B", size=16)
         pdf.cell(200, 10, f"Case ID: {case_id}", ln=True, align="C", fill=True)
 
-    # Generated On (Centered, Small Font)
-    pdf.set_font("Arial", size=12)  # Small font for the timestamp
+    pdf.set_font("Arial", size=12)
     pdf.cell(
         200, 10, f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", ln=True, align="C", fill=True)
-    pdf.ln(20)  # Add some space after the title section
+    pdf.ln(20)
 
-    # Agent Information Section
     pdf.set_font("Arial", style="B", size=14)
-    pdf.set_fill_color(0, 128, 0)  # Green background
-    pdf.set_text_color(255, 255, 255)  # White text
+    pdf.set_fill_color(0, 128, 0)
+    pdf.set_text_color(255, 255, 255)
     pdf.cell(200, 10, "Agent Information", ln=True, align="L", fill=True)
     pdf.ln(5)
 
-    # Table for Agent Information (Stretched to PDF width)
     pdf.set_font("Arial", style="B", size=12)
-    pdf.set_fill_color(0, 128, 0)  # Green color for headers
-    pdf.set_text_color(255, 255, 255)  # White text for headers
-    col_widths = [40, 40, 40, 40, 40]  # Equal column widths
+    pdf.set_fill_color(0, 128, 0)
+    pdf.set_text_color(255, 255, 255)
+    col_widths = [40, 40, 40, 40, 40]
     headers = ["Date & Time", "Name", "Country", "State", "Zip Code"]
     for i, header in enumerate(headers):
         pdf.cell(col_widths[i], 10, header, border=1, align="C", fill=True)
     pdf.ln()
 
     pdf.set_font("Arial", size=10)
-    pdf.set_text_color(0, 0, 0)  # Black text for data
+    pdf.set_text_color(0, 0, 0)
     for i, line in enumerate(log_entries):
         row_color = (240, 240, 240) if i % 2 == 0 else (255, 255, 255)
         pdf.set_fill_color(*row_color)
         columns = line.strip().split(" | ")
-        for j, col in enumerate(columns[:5]):  # First 5 columns
+        for j, col in enumerate(columns[:5]):
             pdf.cell(col_widths[j], 10, col.split(": ")[
                      1], border=1, align="C", fill=True)
         pdf.ln()
 
     pdf.ln(10)
 
-    # Image Information Section
     pdf.set_font("Arial", style="B", size=14)
-    pdf.set_fill_color(0, 128, 0)  # Green background
-    pdf.set_text_color(255, 255, 255)  # White text
+    pdf.set_fill_color(0, 128, 0)
+    pdf.set_text_color(255, 255, 255)
     pdf.cell(200, 10, "Image Information", ln=True, align="L", fill=True)
     pdf.ln(5)
 
-    # Table for Image Information (Stretched to PDF width)
     pdf.set_font("Arial", style="B", size=12)
-    pdf.set_fill_color(0, 128, 0)  # Green color for headers
-    pdf.set_text_color(255, 255, 255)  # White text for headers
-    col_widths = [60, 80, 60]  # Adjusted column widths
+    pdf.set_fill_color(0, 128, 0)
+    pdf.set_text_color(255, 255, 255)
+    col_widths = [60, 80, 60]
     headers = ["Date & Time", "Image File", "Image Size"]
     for i, header in enumerate(headers):
         pdf.cell(col_widths[i], 10, header, border=1, align="C", fill=True)
     pdf.ln()
 
     pdf.set_font("Arial", size=10)
-    pdf.set_text_color(0, 0, 0)  # Black text for data
+    pdf.set_text_color(0, 0, 0)
     for i, line in enumerate(log_entries):
         row_color = (240, 240, 240) if i % 2 == 0 else (255, 255, 255)
         pdf.set_fill_color(*row_color)
@@ -874,35 +823,31 @@ def export_to_pdf(self):
 
     pdf.ln(10)
 
-    # Hash Information Section
     pdf.set_font("Arial", style="B", size=14)
-    pdf.set_fill_color(0, 128, 0)  # Green background
-    pdf.set_text_color(255, 255, 255)  # White text
+    pdf.set_fill_color(0, 128, 0)
+    pdf.set_text_color(255, 255, 255)
     pdf.cell(200, 10, "Hash Information", ln=True, align="L", fill=True)
     pdf.ln(5)
 
-    # Display MD5 and SHA-256 hashes on top of each other
     pdf.set_font("Arial", style="B", size=12)
-    pdf.set_fill_color(0, 128, 0)  # Green color for headers
-    pdf.set_text_color(255, 255, 255)  # White text for headers
+    pdf.set_fill_color(0, 128, 0)
+    pdf.set_text_color(255, 255, 255)
     pdf.cell(50, 10, "Hash Type", border=1, align="C", fill=True)
     pdf.cell(140, 10, "Hash Value", border=1, align="C", fill=True)
     pdf.ln()
 
     pdf.set_font("Arial", size=10)
-    pdf.set_text_color(0, 0, 0)  # Black text for data
+    pdf.set_text_color(0, 0, 0)
     for i, line in enumerate(log_entries):
         columns = line.strip().split(" | ")
         md5_hash = columns[9].split(": ")[1]
         sha256_hash = columns[10].split(": ")[1]
 
-        # MD5 Hash Row
         pdf.set_fill_color(240, 240, 240) if i % 2 == 0 else (255, 255, 255)
         pdf.cell(50, 10, "MD5", border=1, align="C", fill=True)
         pdf.cell(140, 10, md5_hash, border=1, align="L", fill=True)
         pdf.ln()
 
-        # SHA-256 Hash Row
         pdf.set_fill_color(240, 240, 240) if i % 2 == 0 else (255, 255, 255)
         pdf.cell(50, 10, "SHA-256", border=1, align="C", fill=True)
         pdf.cell(140, 10, sha256_hash, border=1, align="L", fill=True)
@@ -910,28 +855,25 @@ def export_to_pdf(self):
 
     pdf.ln(10)
 
-    # Additional Info Section (Gray Box)
     pdf.set_font("Arial", style="B", size=14)
-    pdf.set_fill_color(240, 240, 240)  # Gray background
-    pdf.set_text_color(0, 0, 0)  # Black text
+    pdf.set_fill_color(240, 240, 240)
+    pdf.set_text_color(0, 0, 0)
     pdf.cell(200, 10, "Additional Info", ln=True, align="L", fill=True)
     pdf.ln(5)
 
     pdf.set_font("Arial", size=12)
-    pdf.set_fill_color(240, 240, 240)  # Gray background
+    pdf.set_fill_color(240, 240, 240)
     pdf.multi_cell(200, 10, "This is additional information about the case. It can include notes, comments, or any other relevant details.",
                    border=1, align="L", fill=True)
 
-    # Save the PDF
     pdf.output(pdf_filename)
     messagebox.showinfo(
         "Success", f"Chain of custody exported to {pdf_filename}")
 
-    # Clear the log file after exporting
     try:
         with open(EVIDENCE_LOG, "w") as log_file:
             log_file.write("")
-        print("Log file cleared successfully.")  # Debugging statement
+        print("Log file cleared successfully.")
     except Exception as e:
         messagebox.showerror(
             "Error", f"Failed to clear the log file: {str(e)}")
@@ -959,8 +901,6 @@ def get_connected_drives():
     return drives
 
 
-# ...existing code...
-
 class ForensicApp(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -968,36 +908,29 @@ class ForensicApp(tk.Tk):
         self.geometry("1200x700")
         self.resizable(False, False)
 
-        # Configure the style for the notebook tabs
         self.style = ttk.Style()
         self.style.configure('TNotebook.Tab', font=(
             'Comic Sans MS', '12', 'bold'))
 
-        # Create the notebook (tab control)
         self.tab_control = ttk.Notebook(self)
 
-        # Create the tabs
-        # Disk Imaging tab
         self.tab1 = tk.Frame(self.tab_control, bg="#530a0a")
-        self.tab2 = ChainOfCustodyTab(self.tab_control)  # Chain of Custody tab
-        # Integrity Verification tab
+        self.tab2 = ChainOfCustodyTab(self.tab_control)
+
         self.tab3 = tk.Frame(self.tab_control, bg="#530a0a")
 
-        # Add the tabs to the notebook
         self.tab_control.add(self.tab1, text="Disk Imaging")
         self.tab_control.add(self.tab2, text="Chain of Custody")
         self.tab_control.add(self.tab3, text="Integrity Verification")
 
-        # Pack the notebook to make it visible
         self.tab_control.pack(expand=1, fill="both")
 
-        # Set up the contents of each tab
         self.setup_disk_imaging_tab()
         self.setup_integrity_verification_tab()
 
     def setup_disk_imaging_tab(self):
         """Setup the Disk Imaging tab."""
-        # Define fonts and colors
+
         label_font = ('Courier', 13)
         button_font = ('Courier', 13, 'bold')
         label_color = "#cb1717"
@@ -1019,7 +952,6 @@ class ForensicApp(tk.Tk):
                           fg="#cb1717", bg="#530a0a", font=("Arial", 14))
         label3.place(x=600, y=250)
 
-        # Additional labels in random spaces, avoiding the middle lane (around x=400, y=300)
         label4 = tk.Label(self.tab1, text="&̷",
                           fg="#cb1717", bg="#530a0a", font=("Arial", 17))
         label4.place(x=100, y=150)
@@ -1187,9 +1119,8 @@ class ForensicApp(tk.Tk):
             bg="#530a0a",
             font=("Courier", 90, "bold")
         )
-        welcome_label.place(x=330, y=50)  # Adjust the position as needed
+        welcome_label.place(x=330, y=50)
 
-        # Drive selection
         tk.Label(self.tab1, text="Select Drive:",
                  font=label_font, width=button_width, height=button_height, bg="#530a0a", fg=label_color).place(x=300, y=300)
 
@@ -1200,7 +1131,6 @@ class ForensicApp(tk.Tk):
         self.drive_dropdown.place(x=480, y=300)
         self.refresh_drives()
 
-        # Refresh Drives button
         refresh_btn = tk.Button(self.tab1,
                                 text="🔄",
                                 command=self.refresh_drives,
@@ -1233,14 +1163,12 @@ class ForensicApp(tk.Tk):
                                highlightthickness=0)
         browse_btn.place(x=700, y=350)
 
-        # Disk size
         tk.Label(self.tab1, text="Disk Size (GB):",
                  font=label_font, bg="#530a0a", fg=label_color).place(x=330, y=400)
 
         self.disk_size_entry = tk.Entry(self.tab1, width=20, font=label_font)
         self.disk_size_entry.place(x=480, y=400)
 
-        # Progress indicators
         self.progress_label = tk.Label(self.tab1, text="",
                                        font=label_font, bg="#530a0a", fg=label_color)
         self.progress_label.place(x=510, y=580)
@@ -1249,7 +1177,6 @@ class ForensicApp(tk.Tk):
             self.tab1, orient="horizontal", length=1148, mode="determinate")
         self.progress_bar.place(x=0, y=623)
 
-        # Create labels but don't place them yet
         self.mb_label = tk.Label(self.tab1, text="MB Copied: 0.00 / 0.00",
                                  font=label_font, bg="#530a0a", fg=label_color)
         self.speed_label = tk.Label(self.tab1, text="Speed: 0.00 MB/sec",
@@ -1257,7 +1184,6 @@ class ForensicApp(tk.Tk):
         self.time_label = tk.Label(self.tab1, text="Estimated Time Remaining: --:--:--",
                                    font=label_font, bg="#530a0a", fg=label_color)
 
-        # Create Disk Image button
         create_btn = tk.Button(self.tab1,
                                text="💾 Create Disk Image",
                                command=self.start_disk_imaging,
@@ -1272,12 +1198,11 @@ class ForensicApp(tk.Tk):
                                highlightthickness=0)
         create_btn.place(x=480, y=530)
 
-        # Add hover effects
         for button in (refresh_btn, browse_btn, create_btn):
             button.bind("<Enter>", lambda e, btn=button: btn.configure(
-                bg="#6b2e85"))  # Darker on hover
+                bg="#6b2e85"))
             button.bind("<Leave>", lambda e, btn=button: btn.configure(
-                bg=button_bg))  # Original color when leaving
+                bg=button_bg))
 
     def start_disk_imaging(self):
         """Start the disk imaging process in a background thread."""
@@ -1296,7 +1221,6 @@ class ForensicApp(tk.Tk):
             messagebox.showerror("Error", "Disk size must be a valid number.")
             return
 
-        # Place the labels only when starting the imaging process
         self.mb_label.place(x=460, y=450)
         self.speed_label.place(x=500, y=470)
         self.time_label.place(x=450, y=490)
@@ -1331,7 +1255,7 @@ class ForensicApp(tk.Tk):
 
     def setup_integrity_verification_tab(self):
         """Setup the Integrity Verification tab with tk widgets."""
-        # Define fonts and colors
+
         label_font = ('Courier', 13)
         button_font = ('Courier', 13, 'bold')
         entry_font = ('Courier', 12)
@@ -1341,7 +1265,6 @@ class ForensicApp(tk.Tk):
         entry_bg = "#1f1e1e"
         entry_fg = "#ffffff"
 
-        # Configure tab background
         self.tab3.configure(bg="#530a0a")
 
         welcome_label = tk.Label(
@@ -1353,7 +1276,6 @@ class ForensicApp(tk.Tk):
         )
         welcome_label.pack(pady=(20, 40))
 
-        # Case ID Label and Entry directly on tab3
         tk.Label(
             self.tab3,
             text="Case ID:",
@@ -1372,7 +1294,6 @@ class ForensicApp(tk.Tk):
         )
         self.case_id_entry.place(x=400, y=150)
 
-        # Image File Label and Entry directly on tab3
         tk.Label(
             self.tab3,
             text="Image File:",
@@ -1406,7 +1327,6 @@ class ForensicApp(tk.Tk):
         )
         browse_btn.place(x=640, y=190)
 
-        # Results Label
         self.results_label = tk.Label(
             self.tab3,
             text="Verification Results will appear here",
@@ -1418,7 +1338,6 @@ class ForensicApp(tk.Tk):
         )
         self.results_label.place(x=430, y=300)
 
-        # Verify Button
         verify_btn = tk.Button(
             self.tab3,
             text="🔍 Verify Integrity",
@@ -1434,14 +1353,12 @@ class ForensicApp(tk.Tk):
         )
         verify_btn.place(x=500, y=500)
 
-        # Add hover effects for buttons
         for button in (browse_btn, verify_btn):
             button.bind("<Enter>", lambda e,
                         btn=button: btn.configure(bg="#6b2e85"))
             button.bind("<Leave>", lambda e,
                         btn=button: btn.configure(bg=button_bg))
 
-        # Add decorative elements directly to tab3
         self.add_decorative_elements(self.tab3)
 
     def add_decorative_elements(self, parent):
@@ -1513,7 +1430,7 @@ class ForensicApp(tk.Tk):
             return
 
         try:
-            # Calculate current hashes
+
             md5_hash = hashlib.md5()
             sha256_hash = hashlib.sha256()
 
@@ -1525,7 +1442,6 @@ class ForensicApp(tk.Tk):
             current_md5 = md5_hash.hexdigest()
             current_sha256 = sha256_hash.hexdigest()
 
-            # Read from case_log.csv
             found = False
             with open('case_log.csv', 'r') as csv_file:
                 for line in csv_file:
@@ -1541,7 +1457,6 @@ class ForensicApp(tk.Tk):
                 )
                 return
 
-            # Compare hashes
             results = []
             results.append(f"Case ID: {case_id}\n")
             results.append(
@@ -1568,7 +1483,6 @@ class ForensicApp(tk.Tk):
             messagebox.showerror("Error", f"Verification failed: {str(e)}")
 
 
-# Run
 if __name__ == "__main__":
     app = ForensicApp()
     app.mainloop()
