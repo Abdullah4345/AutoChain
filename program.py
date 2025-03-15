@@ -981,7 +981,7 @@ class ForensicApp(tk.Tk):
         self.tab1 = tk.Frame(self.tab_control, bg="#530a0a")
         self.tab2 = ChainOfCustodyTab(self.tab_control)  # Chain of Custody tab
         # Integrity Verification tab
-        self.tab3 = tk.Frame(self.tab_control, bg="#b6d0e2")
+        self.tab3 = tk.Frame(self.tab_control, bg="#530a0a")
 
         # Add the tabs to the notebook
         self.tab_control.add(self.tab1, text="Disk Imaging")
@@ -1007,11 +1007,11 @@ class ForensicApp(tk.Tk):
         button_cursor = "hand2"
         button_width = 20
         button_height = 2
-        label1 = tk.Label(self.tab1, text="<̷ ",
+        label1 = tk.Label(self.tab1, text="?",
                           fg="#cb1717", bg="#530a0a", font=("Arial", 14))
         label1.place(x=70, y=50)
 
-        label2 = tk.Label(self.tab1, text=">̷",
+        label2 = tk.Label(self.tab1, text="?",
                           fg="#cb1717", bg="#530a0a", font=("Arial", 14))
         label2.place(x=300, y=150)
 
@@ -1053,7 +1053,7 @@ class ForensicApp(tk.Tk):
         label11.place(x=600, y=400)
 
         label12 = tk.Label(self.tab1, text="x",
-                           fg="#cb1717", bg="#530a0a", font=("Arial", 16))
+                           fg="#cb1717", bg="#530a0a", font=("Arial", 14))
         label12.place(x=50, y=100)
 
         label13 = tk.Label(self.tab1, text="x",
@@ -1191,7 +1191,7 @@ class ForensicApp(tk.Tk):
 
         # Drive selection
         tk.Label(self.tab1, text="Select Drive:",
-                 font=label_font, width=button_width, height=button_height, bg="#530a0a", fg=label_color).place(x=330, y=300)
+                 font=label_font, width=button_width, height=button_height, bg="#530a0a", fg=label_color).place(x=300, y=300)
 
         self.drive_var = tk.StringVar()
         self.drive_dropdown = ttk.Combobox(
@@ -1330,23 +1330,138 @@ class ForensicApp(tk.Tk):
                    command=export_to_pdf).pack(pady=5)
 
     def setup_integrity_verification_tab(self):
-        """Setup the Integrity Verification tab."""
-        frame = ttk.LabelFrame(self.tab3, text="Integrity Verification")
-        frame.pack(fill="both", expand=True, padx=10, pady=10)
+        """Setup the Integrity Verification tab with tk widgets."""
+        # Define fonts and colors
+        label_font = ('Courier', 13)
+        button_font = ('Courier', 13, 'bold')
+        entry_font = ('Courier', 12)
+        label_color = "#cb1717"
+        button_bg = "#530a0a"
+        button_fg = "#cb1717"
+        entry_bg = "#1f1e1e"
+        entry_fg = "#ffffff"
 
-        ttk.Label(frame, text="Image File:").grid(
-            row=0, column=0, padx=5, pady=5)
-        self.image_file_entry = ttk.Entry(frame, width=50)
-        self.image_file_entry.grid(row=0, column=1, padx=5, pady=5)
+        # Configure tab background
+        self.tab3.configure(bg="#530a0a")
 
-        ttk.Button(frame, text="Browse", command=self.browse_image_file).grid(
-            row=0, column=2, padx=5, pady=5)
+        welcome_label = tk.Label(
+            self.tab3,
+            text='Integrity Verification',
+            fg="#cb1717",
+            bg="#530a0a",
+            font=("Courier", 40, "bold")
+        )
+        welcome_label.pack(pady=(20, 40))
 
-        self.hash_label = ttk.Label(frame, text="Hash: ")
-        self.hash_label.grid(row=1, column=0, columnspan=3, pady=10)
+        # Case ID Label and Entry directly on tab3
+        tk.Label(
+            self.tab3,
+            text="Case ID:",
+            font=label_font,
+            bg="#530a0a",
+            fg=label_color
+        ).place(x=300, y=150)
 
-        ttk.Button(frame, text="Verify Integrity", command=self.verify_integrity).grid(
-            row=2, column=0, columnspan=3, pady=10)
+        self.case_id_entry = tk.Entry(
+            self.tab3,
+            width=54,
+            font=entry_font,
+            bg=entry_bg,
+            fg=entry_fg,
+            relief="flat"
+        )
+        self.case_id_entry.place(x=400, y=150)
+
+        # Image File Label and Entry directly on tab3
+        tk.Label(
+            self.tab3,
+            text="Image File:",
+            font=label_font,
+            bg="#530a0a",
+            fg=label_color
+        ).place(x=300, y=200)
+
+        self.image_file_entry = tk.Entry(
+            self.tab3,
+            width=30,
+            font=entry_font,
+            bg=entry_bg,
+            fg=entry_fg,
+            relief="flat"
+        )
+        self.image_file_entry.place(x=400, y=200)
+
+        browse_btn = tk.Button(
+            self.tab3,
+            text="📂 Browse",
+            command=self.browse_image_file,
+            font=button_font,
+            bg=button_bg,
+            fg=button_fg,
+            relief="flat",
+            cursor="hand2",
+            bd=0,
+            width=15,
+            height=2
+        )
+        browse_btn.place(x=640, y=190)
+
+        # Results Label
+        self.results_label = tk.Label(
+            self.tab3,
+            text="Verification Results will appear here",
+            font=label_font,
+            bg="#530a0a",
+            fg=label_color,
+            wraplength=800,
+            justify="left"
+        )
+        self.results_label.place(x=430, y=300)
+
+        # Verify Button
+        verify_btn = tk.Button(
+            self.tab3,
+            text="🔍 Verify Integrity",
+            command=self.verify_integrity,
+            font=button_font,
+            bg=button_bg,
+            fg=button_fg,
+            relief="flat",
+            cursor="hand2",
+            bd=0,
+            width=20,
+            height=2
+        )
+        verify_btn.place(x=500, y=500)
+
+        # Add hover effects for buttons
+        for button in (browse_btn, verify_btn):
+            button.bind("<Enter>", lambda e,
+                        btn=button: btn.configure(bg="#6b2e85"))
+            button.bind("<Leave>", lambda e,
+                        btn=button: btn.configure(bg=button_bg))
+
+        # Add decorative elements directly to tab3
+        self.add_decorative_elements(self.tab3)
+
+    def add_decorative_elements(self, parent):
+        """Add decorative symbols to the integrity verification tab."""
+        symbols = ["?", "*̷", "&̷", "(̶", "^̵͉̦̓̓", "Ֆ",
+                   "%͛͘", "@̈́̒͠", "*̳", "¿", "x", "$", "!", "+", "&"]
+        positions = [
+            (70, 50), (120, 150), (600, 250), (100, 150), (650, 100),
+            (200, 500), (550, 70), (700, 400), (50, 450), (150, 300),
+            (600, 400), (50, 100), (700, 250), (800, 150), (950, 300)
+        ]
+
+        for symbol, (x, y) in zip(symbols, positions):
+            tk.Label(
+                parent,
+                text=symbol,
+                fg="#cb1717",
+                bg="#530a0a",
+                font=("Arial", 14)
+            ).place(x=x, y=y)
 
     def refresh_drives(self):
         """Refresh the list of connected drives."""
@@ -1388,19 +1503,69 @@ class ForensicApp(tk.Tk):
             self.image_file_entry.insert(0, file_path)
 
     def verify_integrity(self):
-        """Verify the integrity of the disk image."""
+        """Verify the integrity of the disk image against case_log.csv records."""
+        case_id = self.case_id_entry.get()
         image_file = self.image_file_entry.get()
-        if not image_file:
-            messagebox.showerror("Error", "Please select an image file.")
+
+        if not case_id or not image_file:
+            messagebox.showerror(
+                "Error", "Please enter both Case ID and select an image file.")
             return
 
         try:
-            image_hash = calculate_hash(image_file)
-            self.hash_label.config(text=f"Hash: {image_hash}")
-            messagebox.showinfo("Success", "Integrity verification completed.")
-        except Exception as e:
+            # Calculate current hashes
+            md5_hash = hashlib.md5()
+            sha256_hash = hashlib.sha256()
+
+            with open(image_file, 'rb') as f:
+                while chunk := f.read(8192):
+                    md5_hash.update(chunk)
+                    sha256_hash.update(chunk)
+
+            current_md5 = md5_hash.hexdigest()
+            current_sha256 = sha256_hash.hexdigest()
+
+            # Read from case_log.csv
+            found = False
+            with open('case_log.csv', 'r') as csv_file:
+                for line in csv_file:
+                    stored_case_id, stored_md5, stored_sha256 = line.strip().split(',')
+                    if stored_case_id == case_id:
+                        found = True
+                        break
+
+            if not found:
+                self.results_label.config(
+                    text=f"❌ Case ID {case_id} not found in records.",
+                    fg="#ff0000"
+                )
+                return
+
+            # Compare hashes
+            results = []
+            results.append(f"Case ID: {case_id}\n")
+            results.append(
+                f"MD5 Match: {'✅' if current_md5 == stored_md5 else '❌'}")
+            results.append(
+                f"SHA256 Match: {'✅' if current_sha256 == stored_sha256 else '❌'}\n")
+            results.append("Current Hashes:")
+            results.append(f"MD5: {current_md5}")
+            results.append(f"SHA256: {current_sha256}\n")
+            results.append("Stored Hashes:")
+            results.append(f"MD5: {stored_md5}")
+            results.append(f"SHA256: {stored_sha256}")
+
+            self.results_label.config(
+                text="\n".join(results),
+                fg="#00ff00" if (
+                    current_md5 == stored_md5 and current_sha256 == stored_sha256) else "#ff0000"
+            )
+
+        except FileNotFoundError:
             messagebox.showerror(
-                "Error", f"Integrity verification failed: {str(e)}")
+                "Error", "Case log file or image file not found.")
+        except Exception as e:
+            messagebox.showerror("Error", f"Verification failed: {str(e)}")
 
 
 # Run
