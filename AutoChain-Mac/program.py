@@ -191,7 +191,7 @@ class ChainOfCustodyTab(ttk.Frame):
     def setup_ui(self):
         """Setup the Chain of Custody tab UI."""
 
-        self.title_bg_image = Image.open("Background.png")
+        self.title_bg_image = Image.open("AutoChain-Mac/Background.png")
         self.title_bg_image = self.title_bg_image.resize(
             (1200, 290))
         self.title_bg_photo = ImageTk.PhotoImage(self.title_bg_image)
