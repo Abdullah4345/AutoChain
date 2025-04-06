@@ -1,0 +1,4 @@
+tkinter
+psutil>=5.9.0
+pywin32>=305
+typing>=3.7.4
