@@ -16,13 +16,39 @@ from fpdf import FPDF
 from PIL import Image, ImageTk
 import csv
 import hashlib
+import sys
+import os
 
-OUTPUT_DIR = "forensic_evidence"
-EVIDENCE_LOG = os.path.join(OUTPUT_DIR, "chain_of_custody.log")
+
+def resource_path(relative_path):
+    """Get absolute path to resource for both dev and PyInstaller"""
+    if hasattr(sys, '_MEIPASS'):
+        base_path = sys._MEIPASS
+    else:
+        base_path = os.path.abspath(".")
+
+    # Handle nested data paths
+    possible_paths = [
+        os.path.join(base_path, relative_path),
+        os.path.join(base_path, "data", relative_path),
+        os.path.join(base_path, "forensic_evidence", relative_path)
+    ]
+
+    for path in possible_paths:
+        if os.path.exists(path):
+            return path
+
+    # Return first path if not found (will raise error later)
+    return possible_paths[0]
+
+
+OUTPUT_DIR = resource_path("data/forensic_evidence")
+EVIDENCE_LOG = resource_path(os.path.join(
+    "data/forensic_evidence", "data/forensic_evidence/chain_of_custody.log"))
 HASH_ALGORITHM = "sha256"
 
 
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+os.makedirs(resource_path(OUTPUT_DIR), exist_ok=True)
 
 
 OUTPUT_DIR = "forensic_evidence"
@@ -190,21 +216,24 @@ class ChainOfCustodyTab(ttk.Frame):
 
     def setup_ui(self):
         """Setup the Chain of Custody tab UI."""
-
-        self.title_bg_image = Image.open("AutoChain-Mac/Background.png")
-        self.title_bg_image = self.title_bg_image.resize(
-            (1200, 290))
-        self.title_bg_photo = ImageTk.PhotoImage(self.title_bg_image)
-
         frame = ttk.LabelFrame(self, padding=(20, 10))
-        frame.pack(fill="both", expand=True, padx=0, pady=(
-            280, 0))
+        frame.pack(fill="both", expand=True, padx=0, pady=(280, 0))
 
-        title_label = tk.Label(self, image=self.title_bg_photo, text="",
-                               compound="center", font=("Arial", 14, "bold"),
-                               fg="white", bd=0, relief="flat")
-        title_label.place(x=0, y=0)
+        # Create red background header (1200x290)
+        header_frame = tk.Frame(self, bg="#530a0a", height=290, width=1200)
+        header_frame.place(x=0, y=0)
 
+        # Add title text on the red background
+        title_label = tk.Label(header_frame,
+                               text="Chain of Custody",
+                               font=("Courier", 70, "bold"),
+                               fg="#cb1717",
+                               bg="#530a0a",
+                               bd=0,
+                               relief="flat")
+        title_label.place(relx=0.5, rely=0.5, anchor="center")
+
+        # Form fields (maintained exact same positions as original)
         ttk.Label(frame, text="Case ID:").place(x=10, y=0)
         self.case_id_entry = ttk.Entry(frame, width=40)
         self.case_id_entry.place(x=120, y=0)
@@ -225,13 +254,12 @@ class ChainOfCustodyTab(ttk.Frame):
         self.state_dropdown = ttk.Combobox(
             frame, textvariable=self.state_var, state="readonly", width=39)
         self.state_dropdown.place(x=120, y=90)
-        self.state_dropdown.bind(
-            "<<ComboboxSelected>>", self.update_zip_codes)
+        self.state_dropdown.bind("<<ComboboxSelected>>", self.update_zip_codes)
 
-        ttk.Label(frame, text="Zip Code:", style="TLabel").place(x=10, y=120)
+        ttk.Label(frame, text="Zip Code:").place(x=10, y=120)
         self.zip_var = tk.StringVar()
         self.zip_dropdown = ttk.Combobox(
-            frame, textvariable=self.zip_var, state="readonly", width=39, style="TCombobox")
+            frame, textvariable=self.zip_var, state="readonly", width=39)
         self.zip_dropdown.place(x=120, y=120)
 
         ttk.Label(frame, text="Signature:").place(x=10, y=150)
@@ -288,23 +316,30 @@ class ChainOfCustodyTab(ttk.Frame):
             self.zip_dropdown.current()
 
     def browse_image_file(self):
-        """Open a file dialog to select an image file and update the entry field."""
-        file_path = filedialog.askopenfilename(
-            title="Select an Image File",
-            filetypes=[("Image Files", "*.img *.jpg *.png *.bmp *.tiff")]
-        )
-        if file_path:
+        """Browse for an image file and ensure paths are handled correctly."""
+        try:
+            if not self.winfo_exists():  # Check if widget still exists
+                return
 
-            self.image_file_entry.config(state="normal")
-            self.image_file_entry.delete(0, tk.END)
+            file_path = filedialog.askopenfilename(
+                title="Select an Image File",
+                filetypes=[("Image Files", "*.img *.jpg *.png *.bmp *.tiff")]
+            )
 
-            self.image_file_entry.insert(0, file_path)
-            self.image_file_entry.config(
-                state="readonly")
+            if file_path:
+                # Store the absolute path
+                abs_path = os.path.abspath(file_path)
 
-            self.update_image_size(file_path)
+                self.image_file_entry.config(state="normal")
+                self.image_file_entry.delete(0, tk.END)
+                self.image_file_entry.insert(0, abs_path)
+                self.image_file_entry.config(state="readonly")
 
-            self.calculate_hashes(file_path)
+                self.update_image_size(abs_path)
+                self.calculate_hashes(abs_path)
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to access file: {str(e)}")
 
     def update_image_size(self, file_path):
         """Update the image size label with the size of the selected file."""
@@ -370,10 +405,10 @@ class ChainOfCustodyTab(ttk.Frame):
             f"SHA-256: {sha256_hash} | "
             f"Additional Feedback: {additional_feedback}\n"
         )
-        with open(EVIDENCE_LOG, "a") as log_file:
+        with open(resource_path(EVIDENCE_LOG), "a") as log_file:
             log_file.write(log_entry)
 
-        with open("case_log.csv", "a", newline="") as csv_file:
+        with open(resource_path("data/case_log.csv"), "a", newline="") as csv_file:
             writer = csv.writer(csv_file)
             writer.writerow([case_id, md5_hash, sha256_hash])
 
@@ -381,10 +416,10 @@ class ChainOfCustodyTab(ttk.Frame):
 
     def case_id_exists(self, case_id):
         """Check if the case ID already exists in case_log.csv."""
-        if not os.path.exists("case_log.csv"):
+        if not os.path.exists(resource_path("case_log.csv")):
             return False
 
-        with open("case_log.csv", "r") as csv_file:
+        with open(resource_path("case_log.csv"), "r") as csv_file:
             reader = csv.reader(csv_file)
             for row in reader:
 
@@ -403,12 +438,12 @@ class ChainOfCustodyTab(ttk.Frame):
         if not pdf_filename:
             return
 
-        if not os.path.exists(EVIDENCE_LOG):
+        if not os.path.exists(resource_path(EVIDENCE_LOG)):
             messagebox.showerror("Error", "No log entries found.")
             return
 
         try:
-            with open(EVIDENCE_LOG, "r") as log_file:
+            with open(resource_path(EVIDENCE_LOG), "r") as log_file:
                 log_entries = log_file.readlines()
         except Exception as e:
             messagebox.showerror(
@@ -416,7 +451,7 @@ class ChainOfCustodyTab(ttk.Frame):
             return
 
         try:
-            with open(EVIDENCE_LOG, "w") as log_file:
+            with open(resource_path(EVIDENCE_LOG), "w") as log_file:
                 log_file.write("")
             print("Log file cleared successfully.")
         except Exception as e:
@@ -649,9 +684,9 @@ def log_chain_of_custody(filename, details=""):
 
 def read_chain_of_custody():
     """Read the chain of custody log."""
-    if not os.path.exists(EVIDENCE_LOG):
+    if not os.path.exists(resource_path(EVIDENCE_LOG)):
         return "No log entries found."
-    with open(EVIDENCE_LOG, "r") as log_file:
+    with open(resource_path(EVIDENCE_LOG), "r") as log_file:
         return log_file.read()
 
 
@@ -717,7 +752,7 @@ def create_disk_image(disk_device, output_image, disk_size_gb, progress_callback
 def calculate_hash(file_path, algorithm=HASH_ALGORITHM):
     """Calculate the cryptographic hash of a file."""
     hash_func = hashlib.new(algorithm)
-    with open(file_path, "rb") as f:
+    with open(resource_path(file_path), "rb") as f:
         for chunk in iter(lambda: f.read(4096), b""):
             hash_func.update(chunk)
     return hash_func.hexdigest()
@@ -734,12 +769,12 @@ def export_to_pdf(self):
     if not pdf_filename:
         return
 
-    if not os.path.exists(EVIDENCE_LOG):
+    if not os.path.exists(resource_path(EVIDENCE_LOG)):
         messagebox.showerror("Error", "No log entries found.")
         return
 
     try:
-        with open(EVIDENCE_LOG, "r") as log_file:
+        with open(resource_path(EVIDENCE_LOG), "r") as log_file:
             log_entries = log_file.readlines()
     except Exception as e:
         messagebox.showerror("Error", f"Failed to read the log file: {str(e)}")
@@ -871,7 +906,7 @@ def export_to_pdf(self):
         "Success", f"Chain of custody exported to {pdf_filename}")
 
     try:
-        with open(EVIDENCE_LOG, "w") as log_file:
+        with open(resource_path(EVIDENCE_LOG), "w") as log_file:
             log_file.write("")
         print("Log file cleared successfully.")
     except Exception as e:
@@ -1412,12 +1447,27 @@ class ForensicApp(tk.Tk):
         self.log_text.config(state=tk.DISABLED)
 
     def browse_image_file(self):
-        """Browse for an image file."""
-        file_path = filedialog.askopenfilename(
-            filetypes=[("Image Files", "*.img")])
-        if file_path:
-            self.image_file_entry.delete(0, tk.END)
-            self.image_file_entry.insert(0, file_path)
+        """Browse for an image file and ensure paths are handled correctly."""
+        try:
+            if not self.winfo_exists():  # Check if widget still exists
+                return
+
+            file_path = filedialog.askopenfilename(
+                title="Select an Image File",
+                filetypes=[("Image Files", "*.img *.jpg *.png *.bmp *.tiff")]
+            )
+
+            if file_path:
+                # Store the absolute path using resource_path
+                abs_path = resource_path(file_path)
+
+                self.image_file_entry.config(state="normal")
+                self.image_file_entry.delete(0, tk.END)
+                self.image_file_entry.insert(0, abs_path)
+                self.image_file_entry.config(state="readonly")
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to access file: {str(e)}")
 
     def verify_integrity(self):
         """Verify the integrity of the disk image against case_log.csv records."""
@@ -1434,7 +1484,7 @@ class ForensicApp(tk.Tk):
             md5_hash = hashlib.md5()
             sha256_hash = hashlib.sha256()
 
-            with open(image_file, 'rb') as f:
+            with open(resource_path(image_file), 'rb') as f:
                 while chunk := f.read(8192):
                     md5_hash.update(chunk)
                     sha256_hash.update(chunk)
@@ -1443,7 +1493,7 @@ class ForensicApp(tk.Tk):
             current_sha256 = sha256_hash.hexdigest()
 
             found = False
-            with open('case_log.csv', 'r') as csv_file:
+            with open(resource_path("case_log.csv"), 'r') as csv_file:
                 for line in csv_file:
                     stored_case_id, stored_md5, stored_sha256 = line.strip().split(',')
                     if stored_case_id == case_id:
