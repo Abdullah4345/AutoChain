@@ -39,6 +39,6 @@ Features
 • Omar Ahmed
 • Ehab Reda
 
-Supervised by: Dr. Maryam Adel
+Supervised by: <a href="https://www.linkedin.com/in/maryam-adel-4539b8170" style="display: none;">Dr. Maryam Adel</a>
 </pre>
 
