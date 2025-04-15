@@ -3,7 +3,7 @@
 </div>
 
 ###
-
+<hr style="width: 100%; border: none; border-top: 2px solid black; margin: 0;">
 <p align="left">AutoChain - Automated Chain of Custody & Image Validation<br><br>Overview:<br>
 
 Overview
@@ -30,6 +30,15 @@ Features
 </div>
 
 <p>This tab’s purpose is to verify the image integrity by creating both hash values again and comparing them with the stored values. If both are identical, then it shows a green confirmation message, and if not, it shows a red message, which means the images are tampered with.</p>
+<hr style="width: 100%; border: none; border-top: 2px solid black; margin: 0;">
+<pre style="background-color: white; color: black; padding: 10px;">
 
+  Contributors
+  
+• Abdullah Mohamed 
+• Omar Ahmed
+• Ehab Reda
 
+Supervised by: Dr. Maryam Adel
+</pre>
 
