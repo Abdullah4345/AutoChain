@@ -1,0 +1,4 @@
+reportlab>=4.0.4
+fpdf>=2.7.0
+Pillow>=10.0.0
+pywin32>=306; sys_platform == 'win32' 
