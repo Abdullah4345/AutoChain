@@ -276,6 +276,11 @@ class ChainOfCustodyTab(ttk.Frame):
         self.image_size_label = ttk.Label(frame, text="0 MB")
         self.image_size_label.place(x=120, y=210)
 
+        # Add a progress bar for file processing
+        self.progress_bar = ttk.Progressbar(
+            frame, orient="horizontal", length=260, mode="determinate")
+        self.progress_bar.place(x=120, y=240)
+
         large_font = ("Arial", 10)
 
         ttk.Label(frame, text="MD5 Hash:").place(x=10, y=240)
@@ -318,52 +323,61 @@ class ChainOfCustodyTab(ttk.Frame):
     def browse_image_file(self):
         """Browse for an image file and ensure paths are handled correctly."""
         try:
-            if not self.winfo_exists():  # Check if widget still exists
-                return
-
             file_path = filedialog.askopenfilename(
-                title="Select an Image File",
-                filetypes=[("Image Files", "*.img *.jpg *.png *.bmp *.tiff")]
+                filetypes=[
+                    ("Image Files", "*.img;*.dd;*.iso;*.bin;*.001;*.raw"), ("All Files", "*.*")]
             )
-
             if file_path:
-                # Store the absolute path
-                abs_path = os.path.abspath(file_path)
-
                 self.image_file_entry.config(state="normal")
                 self.image_file_entry.delete(0, tk.END)
-                self.image_file_entry.insert(0, abs_path)
+                self.image_file_entry.insert(0, file_path)
                 self.image_file_entry.config(state="readonly")
-
-                self.update_image_size(abs_path)
-                self.calculate_hashes(abs_path)
-
+                self.update_image_size(file_path)
+                # Calculate hashes in a thread to keep UI responsive
+                threading.Thread(target=self.calculate_hashes,
+                                 args=(file_path,), daemon=True).start()
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to access file: {str(e)}")
+            messagebox.showerror("Error", f"Failed to select file: {str(e)}")
 
     def update_image_size(self, file_path):
         """Update the image size label with the size of the selected file."""
         try:
-            file_size = os.path.getsize(file_path)
-            file_size_mb = file_size / (1024 * 1024)
-            self.image_size_label.config(text=f"{file_size_mb:.2f} MB")
+            size_bytes = os.path.getsize(file_path)
+            size_mb = size_bytes / (1024 * 1024)
+            self.image_size_label.config(text=f"{size_mb:.2f} MB")
         except Exception as e:
-            self.image_size_label.config(text="0 MB")
-            print(f"Error updating image size: {e}")
+            self.image_size_label.config(text="Error")
 
     def calculate_hashes(self, file_path):
-        """Calculate and display the MD5 and SHA-256 hashes of the selected file."""
+        """Calculate and display the MD5 and SHA-256 hashes of the selected file, updating the progress bar."""
         try:
+            md5 = hashlib.md5()
+            sha256 = hashlib.sha256()
+            file_size = os.path.getsize(file_path)
+            chunk_size = 1024 * 1024  # 1MB
+            read_bytes = 0
+
+            self.progress_bar["value"] = 0
+            self.progress_bar["maximum"] = file_size
+
             with open(file_path, "rb") as f:
-                file_data = f.read()
-                md5_hash = hashlib.md5(file_data).hexdigest()
-                sha256_hash = hashlib.sha256(file_data).hexdigest()
-                self.md5_hash_label.config(text=md5_hash)
-                self.sha256_hash_label.config(text=sha256_hash)
+                while True:
+                    chunk = f.read(chunk_size)
+                    if not chunk:
+                        break
+                    md5.update(chunk)
+                    sha256.update(chunk)
+                    read_bytes += len(chunk)
+                    self.progress_bar["value"] = read_bytes
+                    self.progress_bar.update_idletasks()
+
+            self.md5_hash_label.config(text=md5.hexdigest())
+            self.sha256_hash_label.config(text=sha256.hexdigest())
+            self.progress_bar["value"] = file_size  # Ensure bar is full at end
         except Exception as e:
-            self.md5_hash_label.config(text="")
-            self.sha256_hash_label.config(text="")
-            print(f"Error calculating hashes: {e}")
+            self.md5_hash_label.config(text="Error")
+            self.sha256_hash_label.config(text="Error")
+            self.progress_bar["value"] = 0
 
     def submit_form(self):
         """Submit the form and log the chain of custody."""
@@ -690,21 +704,46 @@ def read_chain_of_custody():
         return log_file.read()
 
 
-def create_disk_image(disk_device, output_image, disk_size_gb, progress_callback, progress_bar, mb_label, speed_label, time_label):
-    """Create a forensic disk image using dd."""
+def create_disk_image(disk_device, output_image, progress_callback, progress_bar, mb_label, speed_label, time_label):
+    """Create a forensic disk image using dd, auto-detecting device size."""
     try:
-
         log_chain_of_custody("Disk Imaging Started",
                              f"Device: {disk_device}, Output: {output_image}")
+
+        # --- Get device size in bytes ---
+        size_bytes = 0
+        try:
+            # Use diskutil info for macOS
+            output = subprocess.check_output(
+                ["diskutil", "info", disk_device], text=True)
+            print("DISKUTIL OUTPUT:\n", output)  # Add this line for debugging
+            for line in output.splitlines():
+                if "disk size:" in line.lower() and "bytes" in line.lower():
+                    # Find the part like (15728640000 Bytes)
+                    parts = line.split("(")
+                    for part in parts:
+                        if "bytes" in part.lower():
+                            size_str = part.split(" ")[0].replace(",", "")
+                            size_bytes = int(size_str)
+                            break
+                    if size_bytes > 0:
+                        break
+        except Exception as e:
+            progress_callback(f"Could not determine device size: {e}")
+            return
+
+        if size_bytes == 0:
+            progress_callback("Could not determine device size.")
+            return
+
+        total_size_mb = size_bytes / (1024 * 1024)
+
         command = ["sudo", "dd", f"if={disk_device}",
                    f"of={output_image}", "bs=4M", "status=progress"]
         process = subprocess.Popen(
             command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         start_time = datetime.now()
-        total_size_bytes = disk_size_gb * 1024 * 1024 * 1024
-        total_size_mb = disk_size_gb * 1024
-
         progress = 0
 
         while True:
@@ -717,7 +756,7 @@ def create_disk_image(disk_device, output_image, disk_size_gb, progress_callback
                 copied_bytes = int(match.group(1))
                 copied_mb = copied_bytes / (1024 * 1024)
 
-                progress = (copied_bytes / total_size_bytes) * 100
+                progress = (copied_bytes / size_bytes) * 100
                 progress_bar["value"] = progress
 
                 elapsed_time = datetime.now() - start_time
@@ -732,7 +771,7 @@ def create_disk_image(disk_device, output_image, disk_size_gb, progress_callback
 
                 if copied_bytes > 0 and elapsed_time.total_seconds() > 0:
                     remaining_time = (elapsed_time.total_seconds(
-                    ) / copied_bytes) * (total_size_bytes - copied_bytes)
+                    ) / copied_bytes) * (size_bytes - copied_bytes)
                     time_label.config(
                         text=f"Estimated Time Remaining: {str(timedelta(seconds=int(remaining_time)))}")
                 else:
@@ -1198,11 +1237,12 @@ class ForensicApp(tk.Tk):
                                highlightthickness=0)
         browse_btn.place(x=700, y=350)
 
-        tk.Label(self.tab1, text="Disk Size (GB):",
-                 font=label_font, bg="#530a0a", fg=label_color).place(x=330, y=400)
-
-        self.disk_size_entry = tk.Entry(self.tab1, width=20, font=label_font)
-        self.disk_size_entry.place(x=480, y=400)
+        # --- REMOVE Disk Size (GB) FIELD ---
+        # tk.Label(self.tab1, text="Disk Size (GB):",
+        #          font=label_font, bg="#530a0a", fg=label_color).place(x=330, y=400)
+        # self.disk_size_entry = tk.Entry(self.tab1, width=20, font=label_font)
+        # self.disk_size_entry.place(x=480, y=400)
+        # ------------------------------------
 
         self.progress_label = tk.Label(self.tab1, text="",
                                        font=label_font, bg="#530a0a", fg=label_color)
@@ -1243,17 +1283,10 @@ class ForensicApp(tk.Tk):
         """Start the disk imaging process in a background thread."""
         disk_device = self.drive_var.get()
         output_image = self.output_image_entry.get()
-        disk_size_gb = self.disk_size_entry.get()
 
-        if not disk_device or not output_image or not disk_size_gb:
+        if not disk_device or not output_image:
             messagebox.showerror(
-                "Error", "Please select a flash drive, provide an output image path, and enter the disk size.")
-            return
-
-        try:
-            disk_size_gb = float(disk_size_gb)
-        except ValueError:
-            messagebox.showerror("Error", "Disk size must be a valid number.")
+                "Error", "Please select a flash drive and provide an output image path.")
             return
 
         self.mb_label.place(x=460, y=450)
@@ -1268,7 +1301,7 @@ class ForensicApp(tk.Tk):
 
         imaging_thread = threading.Thread(
             target=create_disk_image,
-            args=(disk_device, output_image, disk_size_gb, self.update_progress,
+            args=(disk_device, output_image, self.update_progress,
                   self.progress_bar, self.mb_label, self.speed_label, self.time_label),
             daemon=True
         )
