@@ -6,7 +6,7 @@
 <hr style="width: 100%; border: none; border-top: 2px solid black; margin: 0;">
 <p align="left">AutoChain - Automated Chain of Custody & Image Validation<br><br>Overview:<br>
 
-Overview
+
 AutoChain is a forensic tool designed to automate the chain of custody process while ensuring integrity and authenticity of forensic images. The tool facilitates the creation of forensic disk images, validates them using cryptographic hashes (MD5 and SHA-256), and generates a detailed chain of custody report in PDF format.
 
 Features
